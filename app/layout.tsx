@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { AuthProvider } from "@/components/providers/auth-provider"
+import { SupabaseAuthProvider } from "@/components/providers/supabase-auth-provider"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -22,7 +22,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ThemeProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <SupabaseAuthProvider>{children}</SupabaseAuthProvider>
         </ThemeProvider>
       </body>
     </html>

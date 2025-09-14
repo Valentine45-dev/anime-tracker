@@ -10,7 +10,7 @@ interface AuthContextType {
   user: User | null
   profile: Profile | null
   session: Session | null
-  signUp: (email: string, password: string, name: string) => Promise<void>
+  signUp: (email: string, password: string, name: string) => Promise<any>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   updateProfile: (updates: Partial<Profile>) => Promise<void>
@@ -100,6 +100,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       }
 
       // Profile will be created automatically by the database trigger
+      return data
     } catch (error) {
       console.error('Sign up error:', error)
       throw error

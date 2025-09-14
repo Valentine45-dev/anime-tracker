@@ -7,6 +7,7 @@ import { Database } from './supabase'
 
 // Use the current project's types
 type Profile = Database['public']['Tables']['profiles']['Row']
+type UserPreferences = Database['public']['Tables']['user_preferences']['Row']
 
 interface AuthContextType {
   user: User | null

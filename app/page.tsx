@@ -8,12 +8,12 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import Image from "next/image"
 import Link from "next/link"
-import { useAuth } from "@/hooks/use-auth"
+import { useSupabaseAuth } from "@/components/providers/supabase-auth-provider"
 import { useTheme } from "@/hooks/use-theme"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("watching")
-  const { user, logout } = useAuth()
+  const { user, profile, signOut } = useSupabaseAuth()
   const { theme, toggleTheme } = useTheme()
   const [showMobileMenu, setShowMobileMenu] = useState(false)
 
@@ -239,7 +239,7 @@ export default function Dashboard() {
 
           {/* Welcome Message */}
           <div className="mb-4">
-            <h2 className="text-lg font-semibold">Welcome back, {user.name}! 👋</h2>
+            <h2 className="text-lg font-semibold">Welcome back, {profile?.name || user?.email}! 👋</h2>
             <p className="text-blue-100 text-sm">You have {animeList.watching.length} anime in progress</p>
           </div>
 

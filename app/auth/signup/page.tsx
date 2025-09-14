@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { useAuth } from "@/hooks/use-auth"
+import { useSupabaseAuth } from "@/components/providers/supabase-auth-provider"
 import { useRouter } from "next/navigation"
 
 export default function SignupPage() {
@@ -19,7 +19,7 @@ export default function SignupPage() {
     confirmPassword: "",
   })
   const [isLoading, setIsLoading] = useState(false)
-  const { signup } = useAuth()
+  const { signUp } = useSupabaseAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,10 +31,19 @@ export default function SignupPage() {
 
     setIsLoading(true)
     try {
-      await signup(formData.name, formData.email, formData.password)
-      router.push("/")
-    } catch (error) {
+      const data = await signUp(formData.email, formData.password, formData.name)
+      
+      // Check if email confirmation is required
+      if (data?.user && !data?.session) {
+        alert("Account created successfully! Please check your email and click the confirmation link to verify your account.")
+      } else {
+        alert("Account created successfully! You can now sign in.")
+      }
+      
+      router.push("/auth/login")
+    } catch (error: any) {
       console.error("Signup failed:", error)
+      alert(`Signup failed: ${error.message || 'Please try again.'}`)
     } finally {
       setIsLoading(false)
     }

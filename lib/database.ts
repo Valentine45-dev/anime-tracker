@@ -2,10 +2,23 @@ import { supabase } from './supabase'
 import { Database } from './supabase'
 import { jikanAPI, convertJikanToAnimeMetadata } from './jikan-api'
 
-// Type definitions from current project
-type AnimeMetadata = Database['public']['Tables']['anime_metadata']['Row']
-type Profile = Database['public']['Tables']['profiles']['Row']
-type UserAnime = Database['public']['Tables']['user_anime']['Row']
+// Import types from database.types.ts to avoid duplicates
+import type { 
+  AnimeMetadata, 
+  Profile, 
+  UserAnime, 
+  Community, 
+  Post, 
+  Notification, 
+  UserPreferences, 
+  UserActivity, 
+  UserFollow, 
+  UserReport, 
+  ContentReport 
+} from './database.types'
+
+// Local Review type for review service functions
+type Review = Database['public']['Tables']['reviews']['Row']
 
 // supabase is already imported from './supabase'
 
@@ -34,32 +47,9 @@ export interface UserAnimeWithMetadata {
   }
 }
 
-export interface Community {
-  id: number
-  name: string
-  description: string | null
-  category: string | null
-  image_url: string | null
-  is_private: boolean
-  member_count: number
-  created_by: string
-  created_at: string
-  updated_at: string
-}
+// Community interface is now imported from database.types.ts
 
-export interface Post {
-  id: number
-  community_id: number
-  user_id: string
-  title: string
-  content: string | null
-  post_type: 'discussion' | 'recommendation' | 'review' | 'news'
-  like_count: number
-  comment_count: number
-  is_pinned: boolean
-  created_at: string
-  updated_at: string
-}
+// Post interface is now imported from database.types.ts
 
 export interface PostComment {
   id: number
@@ -901,34 +891,9 @@ export const recommendationService = {
   }
 }
 
-// Notification Types
-export interface Notification {
-  id: string
-  user_id: string
-  type: string
-  title: string
-  message: string
-  metadata: Record<string, any>
-  read: boolean
-  created_at: string
-}
+// Notification interface is now imported from database.types.ts
 
-// Review Types
-export interface Review {
-  id: string
-  user_id: string
-  anime_id: number
-  rating: number
-  review_text: string | null
-  created_at: string
-  updated_at?: string
-  profiles?: {
-    name: string | null
-    avatar_url: string | null
-  }
-  likes_count?: number
-  is_liked?: boolean
-}
+// Review interface is now imported from database.types.ts
 
 // Activity Types
 export interface ActivityItem {

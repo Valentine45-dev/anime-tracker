@@ -8,14 +8,15 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { useAuth } from "@/hooks/use-auth"
+import { useSupabaseAuth } from "@/components/providers/supabase-auth-provider"
 import { useRouter } from "next/navigation"
+import { Shield } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const { login } = useAuth()
+  const { signIn } = useSupabaseAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,10 +24,11 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      await login(email, password)
+      await signIn(email, password)
       router.push("/")
     } catch (error) {
       console.error("Login failed:", error)
+      alert("Login failed. Please check your credentials.")
     } finally {
       setIsLoading(false)
     }
@@ -70,13 +72,34 @@ export default function LoginPage() {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Don't have an account?{" "}
               <Link href="/auth/signup" className="text-blue-600 hover:underline">
                 Sign up
               </Link>
             </p>
+            
+            <div className="border-t pt-3 space-y-2">
+              <Link 
+                href="/admin/login" 
+                className="inline-flex items-center text-sm text-red-600 hover:text-red-700 hover:underline"
+              >
+                <Shield className="w-4 h-4 mr-1" />
+                Admin Login
+              </Link>
+              <div className="text-center">
+                <Link 
+                  href="/auth/resend-confirmation" 
+                  className="text-sm text-gray-600 hover:underline"
+                >
+                  Didn't receive confirmation email?
+                </Link>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                For administrators only
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>

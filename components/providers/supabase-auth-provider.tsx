@@ -57,15 +57,23 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     const { data: { subscription } } = onAuthStateChange(async (event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
+      setLoading(true)
       
       if (session?.user) {
-        // Get user profile
+        // Get user profile with timeout
         try {
-          const { data: profileData } = await supabase
+          const profilePromise = supabase
             .from('profiles')
-            .select('*')
+            .select('id, email, name, avatar_url, bio, watch_time_hours, favorite_genres, created_at, updated_at')
             .eq('id', session.user.id)
             .single()
+          
+          // Add 5 second timeout
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+          )
+          
+          const { data: profileData } = await Promise.race([profilePromise, timeoutPromise]) as any
           
           setProfile(profileData)
         } catch (error) {

@@ -85,6 +85,16 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   const signUp = async (email: string, password: string, name: string) => {
     try {
       setLoading(true)
+      
+      // First, check if user already exists in our database
+      const checkResponse = await fetch(`/api/auth/create-user?email=${encodeURIComponent(email)}`)
+      const checkData = await checkResponse.json()
+      
+      if (checkData.exists) {
+        throw new Error('An account with this email already exists')
+      }
+
+      // Create Supabase auth user
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -99,7 +109,32 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         throw error
       }
 
-      // Profile will be created automatically by the database trigger
+      // If user was created successfully, create profile in our database
+      if (data.user) {
+        try {
+          const createResponse = await fetch('/api/auth/create-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: data.user.id,
+              email: email,
+              name: name
+            })
+          })
+
+          if (!createResponse.ok) {
+            const errorData = await createResponse.json()
+            console.warn('Failed to create user profile:', errorData.error)
+            // Don't throw error here - user is still created in Supabase auth
+          }
+        } catch (profileError) {
+          console.warn('Error creating user profile:', profileError)
+          // Don't throw error here - user is still created in Supabase auth
+        }
+      }
+
       return data
     } catch (error) {
       console.error('Sign up error:', error)

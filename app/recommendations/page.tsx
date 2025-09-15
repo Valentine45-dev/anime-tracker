@@ -1,12 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Brain, Star, Plus, Filter, Sparkles, RefreshCw } from "lucide-react"
+import { Brain, ArrowLeft, RefreshCw, Filter, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import Image from "next/image"
+import { AnimeCard } from "@/components/ui/anime-card"
 import Link from "next/link"
 
 interface Recommendation {
@@ -186,67 +185,35 @@ export default function RecommendationsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {recommendations.map((anime) => (
-              <Card key={`${anime.id}-${refreshKey}`} className="hover:shadow-lg transition-shadow duration-300">
-                <div className="relative">
-                  <Image
-                    src={anime.coverImage || "/placeholder.jpg"}
-                    alt={anime.title}
-                    width={150}
-                    height={200}
-                    className="w-full h-64 object-cover rounded-t-lg"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/placeholder.jpg";
-                    }}
-                  />
-                  <div className="absolute top-2 right-2">
-                    <Badge className={`${getConfidenceColor(anime.confidence)} bg-white/90 text-xs`}>
-                      {anime.confidence}% match
-                    </Badge>
-                  </div>
-                </div>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg mb-1 text-gray-900 dark:text-white line-clamp-2">
-                    {anime.title}
-                  </h3>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-sm font-medium">{anime.rating}</span>
-                    </div>
-                    <span className="text-gray-400">•</span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{anime.episodes}</span>
-                    <span className="text-gray-400">•</span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{anime.year}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {anime.genres.slice(0, 3).map((genre) => (
-                      <Badge key={genre} variant="secondary" className="text-xs">
-                        {genre}
-                      </Badge>
-                    ))}
-                    {anime.genres.length > 3 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{anime.genres.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 italic line-clamp-2">
-                    "{anime.reason}"
-                  </p>
-                  <div className="flex space-x-2">
-                    <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700">
-                      <Plus className="w-4 h-4 mr-1" />
-                      Add to List
-                    </Button>
-                    <Link href={`/anime/${anime.id}`}>
-                      <Button size="sm" variant="outline">
-                        Details
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+              <AnimeCard
+                key={`${anime.id}-${refreshKey}`}
+                anime={{
+                  id: anime.id,
+                  title: anime.title,
+                  titleEnglish: anime.titleEnglish,
+                  titleRomaji: anime.titleRomaji,
+                  coverImage: anime.coverImage,
+                  episodes: anime.episodes,
+                  averageScore: anime.averageScore,
+                  genres: anime.genres,
+                  studios: anime.studios,
+                  seasonYear: anime.seasonYear,
+                  status: anime.status,
+                  duration: anime.duration,
+                  format: anime.format,
+                  season: anime.season,
+                  source: anime.source,
+                  startDate: anime.startDate?.toString(),
+                  endDate: anime.endDate?.toString(),
+                  nextAiringEpisode: anime.nextAiringEpisode,
+                  nextAiringTime: anime.nextAiringTime?.toString(),
+                  description: anime.description,
+                  popularity: anime.popularity,
+                  bannerImage: anime.bannerImage,
+                }}
+                showAddToList={true}
+                showRating={true}
+              />
             ))}
           </div>
         )}

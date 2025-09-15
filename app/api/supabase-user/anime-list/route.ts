@@ -1,27 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { supabase } from '@/lib/supabase'
 import { getUserAnimeList, addAnimeToList } from '@/lib/supabase-anime'
+import { getCurrentUserId, isAuthenticated } from '@/lib/auth-helper'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'User not authenticated' },
         { status: 401 }
       )
     }
 
+    const userId = getCurrentUserId()
+
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
+    const animeId = searchParams.get('animeId')
+
+    // If specific anime ID is requested, get that anime's data
+    if (animeId) {
+      const animeIdNum = parseInt(animeId)
+      if (isNaN(animeIdNum)) {
+        return NextResponse.json(
+          { error: 'Invalid anime ID' },
+          { status: 400 }
+        )
+      }
+
+      const { data: animeData, error } = await supabase
+        .from('user_anime')
+        .select(`
+          *,
+          anime_metadata:anime_metadata_id (*)
+        `)
+        .eq('user_id', userId)
+        .eq('anime_metadata_id', animeIdNum)
+        .single()
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return NextResponse.json({ animeList: [] })
+        }
+        throw error
+      }
+
+      return NextResponse.json({
+        animeList: [animeData],
+      })
+    }
 
     // Get user's anime list
-    const animeList = await getUserAnimeList(user.id, status || undefined)
+    const animeList = await getUserAnimeList(userId, status || undefined)
 
     return NextResponse.json({
       animeList,
@@ -38,17 +69,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'User not authenticated' },
         { status: 401 }
       )
     }
+
+    const userId = getCurrentUserId()
 
     const body = await request.json()
     const {
@@ -69,25 +98,64 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Add anime to user's list
-    const animeListEntry = await addAnimeToList(
-      user.id,
-      animeMetadataId,
-      status,
-      progress,
-      userRating,
-      notes,
-      startDate,
-      finishDate,
-      isFavorite
-    )
+    // Check if anime already exists in user's list
+    const { data: existingEntry } = await supabase
+      .from('user_anime')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('anime_metadata_id', animeMetadataId)
+      .single()
+
+    let animeListEntry
+
+    if (existingEntry) {
+      // Update existing entry
+      const { data, error } = await supabase
+        .from('user_anime')
+        .update({
+          status,
+          progress,
+          user_rating: userRating,
+          notes,
+          start_date: startDate,
+          finish_date: finishDate,
+          is_favorite: isFavorite,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingEntry.id)
+        .eq('user_id', userId)
+        .select(`
+          *,
+          anime_metadata:anime_metadata_id (*)
+        `)
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      animeListEntry = data
+    } else {
+      // Add new anime to user's list
+      animeListEntry = await addAnimeToList(
+        userId,
+        animeMetadataId,
+        status,
+        progress,
+        userRating,
+        notes,
+        startDate,
+        finishDate,
+        isFavorite
+      )
+    }
 
     return NextResponse.json({
       animeListEntry,
-      message: 'Anime added to list successfully',
+      message: existingEntry ? 'Anime updated successfully' : 'Anime added to list successfully',
     })
   } catch (error) {
-    console.error('Add anime to list error:', error)
+    console.error('Add/Update anime to list error:', error)
     
     if (error instanceof Error && error.message.includes('already exists')) {
       return NextResponse.json(
@@ -97,7 +165,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Failed to add anime to list' },
+      { error: 'Failed to add/update anime to list' },
       { status: 500 }
     )
   }

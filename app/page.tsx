@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { AnimeCard } from "@/components/ui/anime-card"
 import Image from "next/image"
 import Link from "next/link"
 import { useSupabaseAuth } from "@/components/providers/supabase-auth-provider"
@@ -347,83 +348,43 @@ export default function Dashboard() {
                 </div>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                {getCurrentList().map((anime, index) => (
-                <div key={anime.id} className="px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    {/* Anime Cover */}
-                    <div className="flex-shrink-0">
-                      <Link href={`/anime/${anime.id}`}>
-                        <Image
-                          src={anime.coverImage || "/placeholder.jpg"}
-                          alt={anime.title}
-                          width={45}
-                          height={60}
-                          className="rounded object-cover hover:opacity-80 transition-opacity cursor-pointer"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "/placeholder.jpg";
-                          }}
-                        />
-                      </Link>
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-1">
-                        <div className="flex-1">
-                          <Link href={`/anime/${anime.id}`}>
-                            <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate pr-2 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
-                              {anime.title}
-                            </h3>
-                          </Link>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <Badge variant="secondary" className="text-xs">
-                              {anime.genre}
-                            </Badge>
-                            {activeTab === "watching" && "streamingPlatform" in anime && (
-                              <Badge variant="outline" className="text-xs">
-                                {anime.streamingPlatform}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="p-1 h-auto text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </Button>
-                      </div>
-
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-between">
-                        <span>{anime.episodes}</span>
-                        {activeTab === "watching" && "nextEpisode" in anime && (
-                          <span className="text-blue-600 dark:text-blue-400">Next: {anime.nextEpisode}</span>
-                        )}
-                        {activeTab === "completed" && "completedDate" in anime && (
-                          <span>Completed: {anime.completedDate}</span>
-                        )}
-                        {activeTab === "planToWatch" && "addedDate" in anime && <span>Added: {anime.addedDate}</span>}
-                      </div>
-
-                      {/* Rating */}
-                      {anime.rating > 0 && <div className="mb-2">{renderStars(anime.rating)}</div>}
-
-                      {/* Progress Bar */}
-                      <div className="w-full">
-                        <div className="flex items-center justify-between mb-1">
-                          <Progress value={anime.progress} className="flex-1 mr-2" />
-                          <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                            {anime.progress}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              <div className="px-4 py-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {getCurrentList().map((anime) => (
+                    <AnimeCard
+                      key={anime.id}
+                      anime={{
+                        id: anime.id,
+                        title: anime.title,
+                        titleEnglish: anime.titleEnglish,
+                        titleRomaji: anime.titleRomaji,
+                        coverImage: anime.coverImage,
+                        episodes: anime.episodes,
+                        averageScore: anime.averageScore,
+                        genres: anime.genres,
+                        studios: [],
+                        seasonYear: undefined,
+                        status: anime.status,
+                        duration: undefined,
+                        format: undefined,
+                        season: undefined,
+                        source: undefined,
+                        startDate: undefined,
+                        endDate: undefined,
+                        nextAiringEpisode: undefined,
+                        nextAiringTime: undefined,
+                        description: undefined,
+                        popularity: undefined,
+                        bannerImage: undefined,
+                      }}
+                      showAddToList={true}
+                      showRating={true}
+                      userRating={anime.rating}
+                      userStatus={activeTab}
+                      userProgress={anime.progress}
+                    />
+                  ))}
                 </div>
-                ))}
               </div>
             )}
           </TabsContent>

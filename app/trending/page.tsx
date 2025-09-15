@@ -1,13 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { TrendingUp, Star, Calendar, Users, Play, ArrowLeft, RefreshCw } from "lucide-react"
+import { TrendingUp, ArrowLeft, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import Image from "next/image"
+import { AnimeCard } from "@/components/ui/anime-card"
 import Link from "next/link"
 
 interface TrendingAnime {
@@ -88,13 +86,13 @@ export default function TrendingPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: 8 }).map((_, index) => (
-              <Card key={index} className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
-                <div className="aspect-[3/4] bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
-                <CardContent className="p-4">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-2/3"></div>
-                </CardContent>
-              </Card>
+              <div key={index} className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden animate-pulse">
+                <div className="aspect-[3/4] bg-gray-200 dark:bg-gray-700"></div>
+                <div className="p-4">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -174,78 +172,12 @@ export default function TrendingPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredAnime.map((anime) => (
-              <Card key={anime.id} className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group">
-                <div className="relative aspect-[3/4] overflow-hidden">
-                  <Image
-                    src={anime.coverImage || "/placeholder.jpg"}
-                    alt={anime.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/placeholder.jpg";
-                    }}
-                  />
-                  <div className="absolute top-2 right-2">
-                    <Badge variant="secondary" className="bg-black/70 text-white">
-                      <TrendingUp className="w-3 h-3 mr-1" />
-                      Trending
-                    </Badge>
-                  </div>
-                  {anime.averageScore && (
-                    <div className="absolute bottom-2 left-2">
-                      <Badge className="bg-yellow-500 text-white">
-                        <Star className="w-3 h-3 mr-1" />
-                        {(anime.averageScore / 10).toFixed(1)}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-                
-                <CardContent className="p-4">
-                  <CardTitle className="text-lg font-semibold mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                    {anime.title}
-                  </CardTitle>
-                  
-                  {anime.titleEnglish && anime.titleEnglish !== anime.title && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-1">
-                      {anime.titleEnglish}
-                    </p>
-                  )}
-                  
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {anime.genres.slice(0, 2).map((genre, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {genre}
-                      </Badge>
-                    ))}
-                    {anime.genres.length > 2 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{anime.genres.length - 2}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center">
-                      <Play className="w-4 h-4 mr-1" />
-                      <span>{anime.episodes || 'TBA'} EP</span>
-                    </div>
-                    {anime.seasonYear && (
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        <span>{anime.seasonYear}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {anime.studios && anime.studios.length > 0 && (
-                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 truncate">
-                      Studio: {anime.studios[0]}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+              <AnimeCard
+                key={anime.id}
+                anime={anime}
+                showAddToList={true}
+                showRating={true}
+              />
             ))}
           </div>
         )}

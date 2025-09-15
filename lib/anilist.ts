@@ -40,6 +40,7 @@ const SEARCH_ANIME_QUERY = `
         }
         averageScore
         popularity
+        favourites
         studios {
           nodes {
             name
@@ -200,6 +201,7 @@ const GET_TRENDING_ANIME_QUERY = `
         }
         averageScore
         popularity
+        favourites
         studios {
           nodes {
             name
@@ -261,6 +263,7 @@ const GET_ANIME_BY_GENRE_QUERY = `
         }
         averageScore
         popularity
+        favourites
         studios {
           nodes {
             name
@@ -313,6 +316,7 @@ export interface AniListAnime {
   }>
   averageScore?: number
   popularity?: number
+  favourites?: number
   studios: {
     nodes: Array<{
       name: string
@@ -492,6 +496,7 @@ export function transformAniListAnime(anime: AniListAnime) {
     tags: anime.tags.map(tag => tag.name),
     averageScore: anime.averageScore,
     popularity: anime.popularity,
+    favourites: anime.favourites,
     studios: anime.studios.nodes.map(studio => studio.name),
     source: anime.source,
     duration: anime.duration,

@@ -1,10 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 
 export default function TestPage() {
+  const [dbTestResult, setDbTestResult] = useState<string | null>(null)
+  const [isTestingDb, setIsTestingDb] = useState(false)
+
   // Popular anime IDs from AniList for testing
   const popularAnimeIds = [
     { id: 16498, name: "Attack on Titan" },
@@ -19,6 +23,24 @@ export default function TestPage() {
     { id: 223, name: "Dragon Ball Z" }
   ]
 
+  const testDatabase = async () => {
+    setIsTestingDb(true)
+    try {
+      const response = await fetch('/api/test-db')
+      const data = await response.json()
+      
+      if (response.ok) {
+        setDbTestResult(`✅ Database test passed: ${data.message}`)
+      } else {
+        setDbTestResult(`❌ Database test failed: ${data.error} - ${data.details}`)
+      }
+    } catch (error) {
+      setDbTestResult(`❌ Database test error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsTestingDb(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
       <div className="container mx-auto max-w-4xl">
@@ -31,6 +53,33 @@ export default function TestPage() {
           </p>
           
           <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Database Connection Test</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Test if the Supabase database connection is working properly.
+                </p>
+                <Button 
+                  onClick={testDatabase}
+                  disabled={isTestingDb}
+                  className="mb-4"
+                >
+                  {isTestingDb ? 'Testing...' : 'Test Database Connection'}
+                </Button>
+                {dbTestResult && (
+                  <div className={`p-3 rounded-md text-sm ${
+                    dbTestResult.includes('✅') 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                  }`}>
+                    {dbTestResult}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Test Anime Details Pages</CardTitle>

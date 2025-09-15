@@ -81,25 +81,35 @@ export function AnimeCard({
 
     setIsAddingToList(true)
     try {
+      const requestData = {
+        animeMetadataId: anime.id,
+        status: selectedStatus,
+        userRating: selectedRating > 0 ? selectedRating : undefined,
+        notes: notes.trim() || undefined,
+      }
+
+      console.log('Adding anime to list with data:', requestData)
+      console.log('Anime object:', anime)
+
       const response = await fetch('/api/supabase-user/anime-list', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          animeMetadataId: anime.id,
-          status: selectedStatus,
-          userRating: selectedRating > 0 ? selectedRating : undefined,
-          notes: notes.trim() || undefined,
-        }),
+        body: JSON.stringify(requestData),
       })
+
+      console.log('Response status:', response.status)
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()))
 
       if (!response.ok) {
         const error = await response.json()
+        console.error('API Error:', error)
         throw new Error(error.error || 'Failed to add anime to list')
       }
 
       const result = await response.json()
+      console.log('Success result:', result)
       toast.success("Anime added to your list!")
       setIsDialogOpen(false)
       setNotes("")

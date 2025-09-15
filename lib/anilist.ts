@@ -132,7 +132,6 @@ const GET_ANIME_BY_ID_QUERY = `
           name {
             full
           }
-          role
         }
       }
       relations {
@@ -152,14 +151,6 @@ const GET_ANIME_BY_ID_QUERY = `
       recommendations {
         nodes {
           id
-          title {
-            romaji
-            english
-          }
-          coverImage {
-            large
-          }
-          averageScore
         }
       }
     }
@@ -429,11 +420,28 @@ export async function searchAnime(
 
 export async function getAnimeById(id: number): Promise<AniListAnime> {
   try {
+    console.log(`AniList API: Fetching anime with ID ${id}`)
     const variables = { id }
+    console.log('AniList API: Variables:', variables)
+    console.log('AniList API: Query:', GET_ANIME_BY_ID_QUERY)
+    
     const data = await client.request<AniListSingleResponse>(GET_ANIME_BY_ID_QUERY, variables)
+    console.log('AniList API: Raw response:', data)
+    
+    if (!data.Media) {
+      console.error('AniList API: No Media found in response')
+      throw new Error('Anime not found in AniList')
+    }
+    
+    console.log('AniList API: Media data:', data.Media)
     return data.Media
   } catch (error) {
-    console.error('Error fetching anime by ID:', error)
+    console.error('AniList API: Error fetching anime by ID:', error)
+    console.error('AniList API: Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      id
+    })
     throw new Error('Failed to fetch anime details')
   }
 }

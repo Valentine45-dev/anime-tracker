@@ -95,7 +95,7 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
         throw new Error('Failed to fetch anime details')
       }
       const data = await response.json()
-      setAnime(data.anime)
+      setAnime(data)
     } catch (error) {
       console.error('Error fetching anime details:', error)
       toast.error('Failed to load anime details')
@@ -141,19 +141,25 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
 
     setIsAddingToList(true)
     try {
+      const requestData = {
+        animeMetadataId: animeId,
+        status: selectedStatus,
+        userRating: selectedRating > 0 ? selectedRating : undefined,
+        notes: notes.trim() || undefined,
+        isFavorite,
+      }
+      
+      console.log('Adding anime to list from details page:', requestData)
+      
       const response = await fetch('/api/supabase-user/anime-list', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          animeMetadataId: animeId,
-          status: selectedStatus,
-          userRating: selectedRating > 0 ? selectedRating : undefined,
-          notes: notes.trim() || undefined,
-          isFavorite,
-        }),
+        body: JSON.stringify(requestData),
       })
+      
+      console.log('Response status:', response.status)
 
       if (!response.ok) {
         const error = await response.json()

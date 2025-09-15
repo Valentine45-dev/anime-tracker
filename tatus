@@ -1,0 +1,10 @@
+[33mb1277c1[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Add rating/add to list functionality
+[33mf8c7699[m fix: Add favourites field to AniList API and fix trending sorting
+[33m667ec94[m feat: Add trending anime page with real-time images and sorting
+[33mda213e5[m fix the welcome message with user name
+[33m245f896[m Fetch rea time image for dashboard
+[33m301a3b1[m Fix the ai recommendations and real time image fetching
+[33m300a93e[m Version 1
+[33m97161af[m Setup the pages
+[33mdabbff0[m Add admin features and more
+[33me151284[m Initial Commit

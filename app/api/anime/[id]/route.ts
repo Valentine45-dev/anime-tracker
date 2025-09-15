@@ -49,7 +49,7 @@ export async function GET(
           characters: [],
           staff: []
         }
-        return NextResponse.json({ anime: transformedAnime })
+        return NextResponse.json(transformedAnime)
       }
     } catch (dbError) {
       console.log('Anime not found in database, fetching from AniList API')
@@ -57,46 +57,59 @@ export async function GET(
 
     // If not in database, fetch from AniList API and cache it
     try {
+      console.log(`Fetching anime ${animeId} from AniList API...`)
       const anime = await getAnimeById(animeId)
+      console.log('AniList API response:', anime)
       const transformedAnime = transformAniListAnime(anime)
+      console.log('Transformed anime:', transformedAnime)
       
       // Cache the anime data in our database for future requests
+      const animeDataToCache = {
+        id: animeId,
+        mal_id: anime.id, // Use AniList ID as MAL ID for now
+        anilist_id: animeId,
+        title: transformedAnime.title,
+        title_english: transformedAnime.titleEnglish || null,
+        title_japanese: transformedAnime.titleRomaji || null,
+        synopsis: transformedAnime.description || null,
+        episodes: transformedAnime.episodes || null,
+        duration_minutes: transformedAnime.duration || null,
+        status: transformedAnime.status || null,
+        aired_from: transformedAnime.startDate?.toISOString().split('T')[0] || null,
+        aired_to: transformedAnime.endDate?.toISOString().split('T')[0] || null,
+        season: transformedAnime.season || null,
+        year: transformedAnime.seasonYear || null,
+        rating: null,
+        score: transformedAnime.averageScore || null,
+        genres: transformedAnime.genres || [],
+        studios: transformedAnime.studios || [],
+        image_url: transformedAnime.coverImage || null,
+        trailer_url: null,
+      }
+      
       try {
-        const animeDataToCache = {
-          id: animeId,
-          mal_id: anime.id, // Use AniList ID as MAL ID for now
-          anilist_id: animeId,
-          title: transformedAnime.title,
-          title_english: transformedAnime.titleEnglish || null,
-          title_japanese: transformedAnime.titleRomaji || null,
-          synopsis: transformedAnime.description || null,
-          episodes: transformedAnime.episodes || null,
-          duration_minutes: transformedAnime.duration || null,
-          status: transformedAnime.status || null,
-          aired_from: transformedAnime.startDate?.toISOString().split('T')[0] || null,
-          aired_to: transformedAnime.endDate?.toISOString().split('T')[0] || null,
-          season: transformedAnime.season || null,
-          year: transformedAnime.seasonYear || null,
-          rating: null,
-          score: transformedAnime.averageScore || null,
-          genres: transformedAnime.genres || [],
-          studios: transformedAnime.studios || [],
-          image_url: transformedAnime.coverImage || null,
-          trailer_url: null,
-        }
-        
         await insertAnimeMetadata(animeDataToCache)
         console.log('Anime data cached in database')
       } catch (cacheError) {
-        console.log('Failed to cache anime data:', cacheError)
-        // Continue even if caching fails
+        console.error('Failed to cache anime data:', cacheError)
+        console.error('Anime data that failed to cache:', animeDataToCache)
+        console.log('Continuing without caching - this is not critical')
+        // Continue even if caching fails - this is not critical for the user experience
       }
       
-      return NextResponse.json({ anime: transformedAnime })
+      return NextResponse.json(transformedAnime)
     } catch (anilistError) {
       console.error('AniList API error:', anilistError)
+      console.error('Error details:', {
+        message: anilistError instanceof Error ? anilistError.message : 'Unknown error',
+        stack: anilistError instanceof Error ? anilistError.stack : undefined,
+        animeId
+      })
       return NextResponse.json(
-        { error: 'Anime not found' },
+        { 
+          error: 'Anime not found',
+          details: anilistError instanceof Error ? anilistError.message : 'Unknown error'
+        },
         { status: 404 }
       )
     }

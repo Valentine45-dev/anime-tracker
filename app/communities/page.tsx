@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Users, MessageCircle, Heart, Share, Plus, Search, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,55 +10,49 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
 import Link from "next/link"
 
+interface Community {
+  id: number
+  name: string
+  description: string
+  members: number
+  posts: number
+  image: string
+  isJoined: boolean
+  category: string
+  trending: boolean
+  anime?: {
+    title: string
+    genres: string[]
+    studios: string[]
+    averageScore?: number
+  }
+}
+
 export default function CommunitiesPage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [communities, setCommunities] = useState<Community[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const communities = [
-    {
-      id: 1,
-      name: "Shonen Anime Lovers",
-      description: "Discuss your favorite action-packed shonen anime series",
-      members: 15420,
-      posts: 2341,
-      image: "/placeholder.jpg?height=100&width=100&text=Shonen",
-      isJoined: true,
-      category: "Genre",
-      trending: true,
-    },
-    {
-      id: 2,
-      name: "Studio Ghibli Fans",
-      description: "Celebrating the magical world of Studio Ghibli films",
-      members: 8932,
-      posts: 1205,
-      image: "/placeholder.jpg?height=100&width=100&text=Ghibli",
-      isJoined: false,
-      category: "Studio",
-      trending: false,
-    },
-    {
-      id: 3,
-      name: "Anime Recommendations",
-      description: "Get and share anime recommendations with fellow otakus",
-      members: 23567,
-      posts: 4521,
-      image: "/placeholder.jpg?height=100&width=100&text=Recs",
-      isJoined: true,
-      category: "General",
-      trending: true,
-    },
-    {
-      id: 4,
-      name: "Manga Readers Club",
-      description: "For those who prefer reading the source material",
-      members: 12043,
-      posts: 1876,
-      image: "/placeholder.jpg?height=100&width=100&text=Manga",
-      isJoined: false,
-      category: "Manga",
-      trending: false,
-    },
-  ]
+  // Fetch communities data
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch('/api/communities?limit=6')
+        const data = await response.json()
+        
+        if (data.communities) {
+          setCommunities(data.communities)
+        }
+      } catch (error) {
+        console.error('Error fetching communities:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCommunities()
+  }, [])
 
   const recentPosts = [
     {
@@ -142,8 +136,32 @@ export default function CommunitiesPage() {
           </TabsList>
 
           <TabsContent value="discover">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {communities.map((community) => (
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                          <div>
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2"></div>
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+                      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {communities.map((community) => (
                 <Card key={community.id} className="hover:shadow-lg transition-shadow duration-300">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
@@ -153,7 +171,11 @@ export default function CommunitiesPage() {
                           alt={community.name}
                           width={50}
                           height={50}
-                          className="rounded-lg"
+                          className="rounded-lg object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/placeholder.jpg";
+                          }}
                         />
                         <div>
                           <CardTitle className="text-lg flex items-center space-x-2">
@@ -190,8 +212,9 @@ export default function CommunitiesPage() {
                     </Button>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="joined">
@@ -207,7 +230,11 @@ export default function CommunitiesPage() {
                           alt={community.name}
                           width={50}
                           height={50}
-                          className="rounded-lg"
+                          className="rounded-lg object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/placeholder.jpg";
+                          }}
                         />
                         <div>
                           <CardTitle className="text-lg">{community.name}</CardTitle>

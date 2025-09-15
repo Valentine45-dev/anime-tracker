@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Star, Edit3, Plus, Menu, Bell, User, TrendingUp, Users, Brain, Moon, Sun, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -14,11 +14,41 @@ import { useSupabaseAuth } from "@/components/providers/supabase-auth-provider"
 import { useTheme } from "@/hooks/use-theme"
 import { useRouter } from "next/navigation"
 
+interface DashboardAnime {
+  id: number
+  title: string
+  titleEnglish?: string
+  titleRomaji?: string
+  coverImage?: string
+  episodes?: number
+  rating: number
+  progress: number
+  progressColor: string
+  genre: string
+  genres: string[]
+  averageScore?: number
+  status?: string
+  nextEpisode?: string
+  streamingPlatform?: string
+  completedDate?: string
+  onHoldDate?: string
+  droppedDate?: string
+  addedDate?: string
+}
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("watching")
   const { user, profile, signOut } = useSupabaseAuth()
   const { theme, toggleTheme } = useTheme()
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [animeLists, setAnimeLists] = useState<Record<string, DashboardAnime[]>>({
+    watching: [],
+    completed: [],
+    onHold: [],
+    dropped: [],
+    planToWatch: []
+  })
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
   const handleSignOut = async () => {
@@ -39,86 +69,35 @@ export default function Dashboard() {
       .slice(0, 2)
   }
 
-  const animeList = {
-    watching: [
-      {
-        id: 1,
-        title: "Jujutsu Kaisen",
-        episodes: "15 / 24 EP",
-        rating: 5,
-        progress: 62,
-        image: "/placeholder.jpg?height=80&width=60&text=JJK",
-        progressColor: "bg-green-500",
-        genre: "Action",
-        nextEpisode: "Tomorrow",
-        streamingPlatform: "Crunchyroll",
-      },
-      {
-        id: 2,
-        title: "Attack on Titan",
-        episodes: "75 / 87 EP",
-        rating: 5,
-        progress: 86,
-        image: "/placeholder.jpg?height=80&width=60&text=AOT",
-        progressColor: "bg-blue-500",
-        genre: "Drama",
-        nextEpisode: "Completed",
-        streamingPlatform: "Funimation",
-      },
-      {
-        id: 3,
-        title: "Demon Slayer",
-        episodes: "32 / 44 EP",
-        rating: 4,
-        progress: 73,
-        image: "/placeholder.jpg?height=80&width=60&text=DS",
-        progressColor: "bg-purple-500",
-        genre: "Supernatural",
-        nextEpisode: "Friday",
-        streamingPlatform: "Netflix",
-      },
-      {
-        id: 4,
-        title: "One Piece",
-        episodes: "1050 / ?? EP",
-        rating: 5,
-        progress: 95,
-        image: "/placeholder.jpg?height=80&width=60&text=OP",
-        progressColor: "bg-yellow-500",
-        genre: "Adventure",
-        nextEpisode: "Sunday",
-        streamingPlatform: "Crunchyroll",
-      },
-    ],
-    completed: [
-      {
-        id: 5,
-        title: "Death Note",
-        episodes: "37 / 37 EP",
-        rating: 5,
-        progress: 100,
-        image: "/placeholder.jpg?height=80&width=60&text=DN",
-        progressColor: "bg-green-500",
-        genre: "Thriller",
-        completedDate: "2024-01-15",
-      },
-    ],
-    onHold: [],
-    dropped: [],
-    planToWatch: [
-      {
-        id: 6,
-        title: "Spirited Away",
-        episodes: "Movie",
-        rating: 0,
-        progress: 0,
-        image: "/placeholder.jpg?height=80&width=60&text=SA",
-        progressColor: "bg-gray-400",
-        genre: "Fantasy",
-        addedDate: "2024-01-20",
-      },
-    ],
+  // Fetch anime data for each status
+  const fetchAnimeData = async (status: string) => {
+    try {
+      const response = await fetch(`/api/dashboard/anime?status=${status}&limit=8`)
+      const data = await response.json()
+      
+      if (data.anime) {
+        setAnimeLists(prev => ({
+          ...prev,
+          [status]: data.anime
+        }))
+      }
+    } catch (error) {
+      console.error(`Error fetching ${status} anime:`, error)
+    }
   }
+
+  // Load all anime data on component mount
+  useEffect(() => {
+    const loadAllAnime = async () => {
+      setIsLoading(true)
+      const statuses = ['watching', 'completed', 'onHold', 'dropped', 'planToWatch']
+      
+      await Promise.all(statuses.map(status => fetchAnimeData(status)))
+      setIsLoading(false)
+    }
+
+    loadAllAnime()
+  }, [])
 
   const renderStars = (rating: number) => {
     return (
@@ -131,24 +110,11 @@ export default function Dashboard() {
   }
 
   const getCurrentList = () => {
-    switch (activeTab) {
-      case "watching":
-        return animeList.watching
-      case "completed":
-        return animeList.completed
-      case "onHold":
-        return animeList.onHold
-      case "dropped":
-        return animeList.dropped
-      case "planToWatch":
-        return animeList.planToWatch
-      default:
-        return animeList.watching
-    }
+    return animeLists[activeTab] || []
   }
 
   const getTabCount = (tab: string) => {
-    return animeList[tab as keyof typeof animeList]?.length || 0
+    return animeLists[tab]?.length || 0
   }
 
   if (!user) {
@@ -297,7 +263,7 @@ export default function Dashboard() {
           {/* Welcome Message */}
           <div className="mb-4">
             <h2 className="text-lg font-semibold">Welcome back, {profile?.name || user?.email}! 👋</h2>
-            <p className="text-blue-100 text-sm">You have {animeList.watching.length} anime in progress</p>
+            <p className="text-blue-100 text-sm">You have {animeLists.watching.length} anime in progress</p>
           </div>
 
           {/* Navigation Tabs */}
@@ -342,19 +308,45 @@ export default function Dashboard() {
       <div className="bg-white dark:bg-gray-800">
         <Tabs value={activeTab} className="w-full">
           <TabsContent value={activeTab} className="mt-0">
-            <div className="divide-y divide-gray-100 dark:divide-gray-700">
-              {getCurrentList().map((anime, index) => (
+            {isLoading ? (
+              <div className="px-4 py-8">
+                <div className="space-y-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex items-center space-x-3 animate-pulse">
+                      <div className="w-12 h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : getCurrentList().length === 0 ? (
+              <div className="px-4 py-8 text-center">
+                <div className="text-gray-500 dark:text-gray-400">
+                  <p className="text-lg font-medium mb-2">No anime in this list</p>
+                  <p className="text-sm">Start adding anime to your {activeTab} list!</p>
+                </div>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                {getCurrentList().map((anime, index) => (
                 <div key={anime.id} className="px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   <div className="flex items-center space-x-3">
                     {/* Anime Cover */}
                     <div className="flex-shrink-0">
                       <Link href={`/anime/${anime.id}`}>
                         <Image
-                          src={anime.image || "/placeholder.jpg"}
+                          src={anime.coverImage || "/placeholder.jpg"}
                           alt={anime.title}
                           width={45}
                           height={60}
                           className="rounded object-cover hover:opacity-80 transition-opacity cursor-pointer"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/placeholder.jpg";
+                          }}
                         />
                       </Link>
                     </div>
@@ -414,20 +406,9 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-              ))}
-
-              {getCurrentList().length === 0 && (
-                <div className="px-4 py-12 text-center">
-                  <div className="text-gray-400 dark:text-gray-500 text-sm mb-4">No anime in this list yet</div>
-                  <Link href="/search">
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Anime
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
@@ -437,18 +418,18 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {animeList.watching.length + animeList.completed.length}
+              {animeLists.watching.length + animeLists.completed.length}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Total Anime</div>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg text-center">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{animeList.completed.length}</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{animeLists.completed.length}</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Completed</div>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
               {Math.round(
-                animeList.watching.reduce((acc, anime) => acc + anime.progress, 0) / animeList.watching.length,
+                animeLists.watching.reduce((acc: number, anime: DashboardAnime) => acc + anime.progress, 0) / animeLists.watching.length,
               ) || 0}
               %
             </div>
@@ -456,7 +437,7 @@ export default function Dashboard() {
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-              {animeList.planToWatch.length}
+              {animeLists.planToWatch.length}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Plan to Watch</div>
           </div>

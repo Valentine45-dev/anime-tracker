@@ -87,20 +87,88 @@ export default function Dashboard() {
     return 'User'
   }
 
-  // Fetch anime data for each status
-  const fetchAnimeData = async (status: string) => {
+  // Fetch user's personal anime list for each status
+  const fetchAnimeData = async (apiStatus: string, tabName: string) => {
     try {
-      const response = await fetch(`/api/dashboard/anime?status=${status}&limit=8`)
+      console.log(`Fetching anime for status: ${apiStatus} -> tab: ${tabName}`)
+      const response = await fetch(`/api/supabase-user/anime-list?status=${apiStatus}&limit=8`)
       const data = await response.json()
       
-      if (data.anime) {
+      console.log(`API response for ${apiStatus}:`, data)
+      
+      if (data.animeList) {
+        // Transform the data to match our dashboard format
+        const transformedAnime = data.animeList.map((item: any) => ({
+          id: item.anime_metadata.id,
+          title: item.anime_metadata.title,
+          titleEnglish: item.anime_metadata.title_english,
+          titleRomaji: item.anime_metadata.title_japanese,
+          coverImage: item.anime_metadata.image_url,
+          episodes: item.anime_metadata.episodes,
+          averageScore: item.anime_metadata.score,
+          genres: item.anime_metadata.genres || [],
+          studios: item.anime_metadata.studios || [],
+          rating: item.user_rating || 0,
+          progress: item.progress || 0,
+          progressColor: getProgressColor(item.progress || 0),
+          genre: item.anime_metadata.genres?.[0] || 'Unknown',
+          status: item.status,
+          nextEpisode: item.status === 'watching' ? 'Next Episode' : undefined,
+          streamingPlatform: 'Crunchyroll', // Default for now
+          completedDate: item.finish_date,
+          onHoldDate: item.status === 'on-hold' ? item.updated_at?.split('T')[0] : undefined,
+          droppedDate: item.status === 'dropped' ? item.updated_at?.split('T')[0] : undefined,
+          addedDate: item.created_at?.split('T')[0]
+        }))
+        
         setAnimeLists(prev => ({
           ...prev,
-          [status]: data.anime
+          [tabName]: transformedAnime
+        }))
+      } else {
+        // If no anime in this status, show empty array
+        setAnimeLists(prev => ({
+          ...prev,
+          [tabName]: []
         }))
       }
     } catch (error) {
-      console.error(`Error fetching ${status} anime:`, error)
+      console.error(`Error fetching ${apiStatus} anime:`, error)
+      // Set empty array on error
+      setAnimeLists(prev => ({
+        ...prev,
+        [tabName]: []
+      }))
+    }
+  }
+
+  // Helper function to get progress color based on progress percentage
+  const getProgressColor = (progress: number): string => {
+    if (progress >= 90) return 'bg-green-500'
+    if (progress >= 70) return 'bg-blue-500'
+    if (progress >= 50) return 'bg-yellow-500'
+    if (progress >= 30) return 'bg-orange-500'
+    return 'bg-red-500'
+  }
+
+  // Handle adding anime to list
+  const handleAddToList = async (animeId: number, status: string, rating?: number, notes?: string) => {
+    try {
+      // Map the status to the correct tab name and refresh
+      const statusMap: Record<string, { tab: string; api: string }> = {
+        'watching': { tab: 'watching', api: 'watching' },
+        'completed': { tab: 'completed', api: 'completed' },
+        'on-hold': { tab: 'onHold', api: 'on-hold' },
+        'dropped': { tab: 'dropped', api: 'dropped' },
+        'plan-to-watch': { tab: 'planToWatch', api: 'plan-to-watch' }
+      }
+      
+      const mapping = statusMap[status]
+      if (mapping) {
+        await fetchAnimeData(mapping.api, mapping.tab)
+      }
+    } catch (error) {
+      console.error('Error refreshing anime data after adding to list:', error)
     }
   }
 
@@ -108,9 +176,15 @@ export default function Dashboard() {
   useEffect(() => {
     const loadAllAnime = async () => {
       setIsLoading(true)
-      const statuses = ['watching', 'completed', 'onHold', 'dropped', 'planToWatch']
+      const statuses = [
+        { tab: 'watching', api: 'watching' },
+        { tab: 'completed', api: 'completed' },
+        { tab: 'onHold', api: 'on-hold' },
+        { tab: 'dropped', api: 'dropped' },
+        { tab: 'planToWatch', api: 'plan-to-watch' }
+      ]
       
-      await Promise.all(statuses.map(status => fetchAnimeData(status)))
+      await Promise.all(statuses.map(({ tab, api }) => fetchAnimeData(api, tab)))
       setIsLoading(false)
     }
 
@@ -343,8 +417,22 @@ export default function Dashboard() {
             ) : getCurrentList().length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <div className="text-gray-500 dark:text-gray-400">
-                  <p className="text-lg font-medium mb-2">No anime in this list</p>
-                  <p className="text-sm">Start adding anime to your {activeTab} list!</p>
+                  <p className="text-lg font-medium mb-2">No anime in your {activeTab} list</p>
+                  <p className="text-sm mb-4">Start adding anime from the Trending or Recommendations pages!</p>
+                  <div className="space-x-4">
+                    <a 
+                      href="/trending" 
+                      className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Browse Trending
+                    </a>
+                    <a 
+                      href="/recommendations" 
+                      className="inline-block bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      Get Recommendations
+                    </a>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -377,10 +465,10 @@ export default function Dashboard() {
                         popularity: undefined,
                         bannerImage: undefined,
                       }}
-                      showAddToList={true}
+                      showAddToList={false}
                       showRating={true}
                       userRating={anime.rating}
-                      userStatus={activeTab}
+                      userStatus={anime.status}
                       userProgress={anime.progress}
                     />
                   ))}

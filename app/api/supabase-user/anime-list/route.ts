@@ -242,6 +242,17 @@ export async function POST(request: NextRequest) {
       animeMetadataId: 'unknown'
     })
     
+    // Check if it's a foreign key constraint violation
+    if (error instanceof Error && error.message.includes('violates foreign key constraint')) {
+      return NextResponse.json(
+        { 
+          error: 'User profile not found. Please run the dev user creation script in Supabase.',
+          details: 'The development user needs to be created in the profiles table. Run: curl -X POST http://localhost:3000/api/setup-dev-user'
+        },
+        { status: 500 }
+      )
+    }
+    
     // Check if it's a database schema error
     if (error instanceof Error && error.message.includes('numeric field overflow')) {
       return NextResponse.json(

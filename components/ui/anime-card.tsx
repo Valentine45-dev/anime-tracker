@@ -148,9 +148,10 @@ export function AnimeCard({
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Failed to update rating')
+        throw new Error(error.error || 'Failed to add/update anime to list')
       }
 
+      const result = await response.json()
       toast.success(`Rated ${anime.title} ${rating}/10`)
       setSelectedRating(rating)
       

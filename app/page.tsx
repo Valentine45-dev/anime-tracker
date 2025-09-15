@@ -1,21 +1,43 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Star, Edit3, Plus, Menu, Bell, User, TrendingUp, Users, Brain, Moon, Sun } from "lucide-react"
+import { Search, Star, Edit3, Plus, Menu, Bell, User, TrendingUp, Users, Brain, Moon, Sun, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Image from "next/image"
 import Link from "next/link"
 import { useSupabaseAuth } from "@/components/providers/supabase-auth-provider"
 import { useTheme } from "@/hooks/use-theme"
+import { useRouter } from "next/navigation"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("watching")
   const { user, profile, signOut } = useSupabaseAuth()
   const { theme, toggleTheme } = useTheme()
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      router.push("/")
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map(word => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
 
   const animeList = {
     watching: [
@@ -25,7 +47,7 @@ export default function Dashboard() {
         episodes: "15 / 24 EP",
         rating: 5,
         progress: 62,
-        image: "/placeholder.svg?height=80&width=60&text=JJK",
+        image: "/placeholder.jpg?height=80&width=60&text=JJK",
         progressColor: "bg-green-500",
         genre: "Action",
         nextEpisode: "Tomorrow",
@@ -37,7 +59,7 @@ export default function Dashboard() {
         episodes: "75 / 87 EP",
         rating: 5,
         progress: 86,
-        image: "/placeholder.svg?height=80&width=60&text=AOT",
+        image: "/placeholder.jpg?height=80&width=60&text=AOT",
         progressColor: "bg-blue-500",
         genre: "Drama",
         nextEpisode: "Completed",
@@ -49,7 +71,7 @@ export default function Dashboard() {
         episodes: "32 / 44 EP",
         rating: 4,
         progress: 73,
-        image: "/placeholder.svg?height=80&width=60&text=DS",
+        image: "/placeholder.jpg?height=80&width=60&text=DS",
         progressColor: "bg-purple-500",
         genre: "Supernatural",
         nextEpisode: "Friday",
@@ -61,7 +83,7 @@ export default function Dashboard() {
         episodes: "1050 / ?? EP",
         rating: 5,
         progress: 95,
-        image: "/placeholder.svg?height=80&width=60&text=OP",
+        image: "/placeholder.jpg?height=80&width=60&text=OP",
         progressColor: "bg-yellow-500",
         genre: "Adventure",
         nextEpisode: "Sunday",
@@ -75,7 +97,7 @@ export default function Dashboard() {
         episodes: "37 / 37 EP",
         rating: 5,
         progress: 100,
-        image: "/placeholder.svg?height=80&width=60&text=DN",
+        image: "/placeholder.jpg?height=80&width=60&text=DN",
         progressColor: "bg-green-500",
         genre: "Thriller",
         completedDate: "2024-01-15",
@@ -90,7 +112,7 @@ export default function Dashboard() {
         episodes: "Movie",
         rating: 0,
         progress: 0,
-        image: "/placeholder.svg?height=80&width=60&text=SA",
+        image: "/placeholder.jpg?height=80&width=60&text=SA",
         progressColor: "bg-gray-400",
         genre: "Fantasy",
         addedDate: "2024-01-20",
@@ -203,11 +225,46 @@ export default function Dashboard() {
               <Button variant="ghost" size="sm" className="text-white p-1" onClick={toggleTheme}>
                 {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </Button>
-              <Link href="/profile">
-                <Button variant="ghost" size="sm" className="text-white p-1">
-                  <User className="w-5 h-5" />
-                </Button>
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-white p-1">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={profile?.avatar_url || ""} alt={profile?.name || "User"} />
+                      <AvatarFallback className="text-xs">
+                        {getInitials(profile?.name || user?.email || "U")}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      <p className="font-medium">{profile?.name || user?.email?.split("@")[0] || "User"}</p>
+                      <p className="w-[200px] truncate text-sm text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="flex items-center">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -293,7 +350,7 @@ export default function Dashboard() {
                     <div className="flex-shrink-0">
                       <Link href={`/anime/${anime.id}`}>
                         <Image
-                          src={anime.image || "/placeholder.svg"}
+                          src={anime.image || "/placeholder.jpg"}
                           alt={anime.title}
                           width={45}
                           height={60}

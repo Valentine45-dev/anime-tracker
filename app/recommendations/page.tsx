@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Brain, Star, Plus, Filter, Sparkles } from "lucide-react"
+import { Brain, Star, Plus, Filter, Sparkles, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,69 +9,85 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Image from "next/image"
 import Link from "next/link"
 
-export default function RecommendationsPage() {
-  const [recommendations, setRecommendations] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [filter, setFilter] = useState("all")
+interface Recommendation {
+  id: number
+  title: string
+  titleEnglish?: string
+  titleRomaji?: string
+  titleNative?: string
+  description?: string
+  coverImage?: string
+  bannerImage?: string
+  episodes?: number
+  status?: string
+  format?: string
+  season?: string
+  seasonYear?: number
+  genres: string[]
+  tags: string[]
+  averageScore?: number
+  popularity?: number
+  studios: string[]
+  source?: string
+  duration?: number
+  startDate?: Date | null
+  endDate?: Date | null
+  nextAiringEpisode?: number
+  nextAiringTime?: Date | null
+  reason: string
+  confidence: number
+  rating: string
+  year: string | number
+  studio: string
+}
 
-  const mockRecommendations = [
-    {
-      id: 1,
-      title: "Chainsaw Man",
-      rating: 8.9,
-      genre: ["Action", "Supernatural"],
-      reason: "Based on your love for Jujutsu Kaisen",
-      confidence: 95,
-      image: "/placeholder.svg?height=200&width=150&text=Chainsaw+Man",
-      episodes: "12 EP",
-      year: 2022,
-      studio: "MAPPA",
-    },
-    {
-      id: 2,
-      title: "Mob Psycho 100",
-      rating: 9.1,
-      genre: ["Action", "Comedy"],
-      reason: "Similar supernatural themes to your favorites",
-      confidence: 88,
-      image: "/placeholder.svg?height=200&width=150&text=Mob+Psycho",
-      episodes: "37 EP",
-      year: 2016,
-      studio: "Bones",
-    },
-    {
-      id: 3,
-      title: "Tokyo Ghoul",
-      rating: 8.2,
-      genre: ["Action", "Horror"],
-      reason: "Dark themes like Attack on Titan",
-      confidence: 82,
-      image: "/placeholder.svg?height=200&width=150&text=Tokyo+Ghoul",
-      episodes: "48 EP",
-      year: 2014,
-      studio: "Pierrot",
-    },
-    {
-      id: 4,
-      title: "Hunter x Hunter",
-      rating: 9.4,
-      genre: ["Adventure", "Action"],
-      reason: "Epic adventure like One Piece",
-      confidence: 91,
-      image: "/placeholder.svg?height=200&width=150&text=HxH",
-      episodes: "148 EP",
-      year: 2011,
-      studio: "Madhouse",
-    },
-  ]
+export default function RecommendationsPage() {
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [filter, setFilter] = useState("all")
+  const [sortBy, setSortBy] = useState("trending")
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const fetchRecommendations = async (refresh = false) => {
+    try {
+      if (refresh) {
+        setIsRefreshing(true)
+      } else {
+        setIsLoading(true)
+      }
+
+      const params = new URLSearchParams({
+        perPage: '8',
+        genre: filter,
+        sortBy: sortBy,
+        refresh: refresh.toString()
+      })
+
+      const response = await fetch(`/api/recommendations?${params}`)
+      const data = await response.json()
+
+      if (data.recommendations) {
+        setRecommendations(data.recommendations)
+      } else {
+        console.error('Failed to fetch recommendations:', data.error)
+      }
+    } catch (error) {
+      console.error('Error fetching recommendations:', error)
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }
 
   useEffect(() => {
-    // Simulate AI recommendation loading
-    setTimeout(() => {
-      setRecommendations(mockRecommendations)
-      setIsLoading(false)
-    }, 2000)
-  }, [])
+    fetchRecommendations()
+  }, [filter, sortBy])
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1)
+    fetchRecommendations(true)
+  }
 
   const getConfidenceColor = (confidence: number) => {
     if (confidence >= 90) return "text-green-600"
@@ -109,19 +125,44 @@ export default function RecommendationsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Genres</SelectItem>
-                <SelectItem value="action">Action</SelectItem>
-                <SelectItem value="adventure">Adventure</SelectItem>
-                <SelectItem value="comedy">Comedy</SelectItem>
-                <SelectItem value="drama">Drama</SelectItem>
-                <SelectItem value="fantasy">Fantasy</SelectItem>
-                <SelectItem value="horror">Horror</SelectItem>
-                <SelectItem value="romance">Romance</SelectItem>
-                <SelectItem value="supernatural">Supernatural</SelectItem>
+                <SelectItem value="Action">Action</SelectItem>
+                <SelectItem value="Adventure">Adventure</SelectItem>
+                <SelectItem value="Comedy">Comedy</SelectItem>
+                <SelectItem value="Drama">Drama</SelectItem>
+                <SelectItem value="Fantasy">Fantasy</SelectItem>
+                <SelectItem value="Horror">Horror</SelectItem>
+                <SelectItem value="Romance">Romance</SelectItem>
+                <SelectItem value="Supernatural">Supernatural</SelectItem>
+                <SelectItem value="Sci-Fi">Sci-Fi</SelectItem>
+                <SelectItem value="Slice of Life">Slice of Life</SelectItem>
+                <SelectItem value="Sports">Sports</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="flex items-center space-x-2 bg-transparent">
-              <Sparkles className="w-4 h-4" />
-              <span>Refresh Recommendations</span>
+            
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-48">
+                <Filter className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="trending">Trending</SelectItem>
+                <SelectItem value="popular">Popular</SelectItem>
+                <SelectItem value="random">Random</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button 
+              variant="outline" 
+              className="flex items-center space-x-2 bg-transparent"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              {isRefreshing ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4" />
+              )}
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh Recommendations'}</span>
             </Button>
           </div>
         </div>
@@ -145,14 +186,18 @@ export default function RecommendationsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {recommendations.map((anime) => (
-              <Card key={anime.id} className="hover:shadow-lg transition-shadow duration-300">
+              <Card key={`${anime.id}-${refreshKey}`} className="hover:shadow-lg transition-shadow duration-300">
                 <div className="relative">
                   <Image
-                    src={anime.image || "/placeholder.svg"}
+                    src={anime.coverImage || "/placeholder.jpg"}
                     alt={anime.title}
                     width={150}
                     height={200}
                     className="w-full h-64 object-cover rounded-t-lg"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.jpg";
+                    }}
                   />
                   <div className="absolute top-2 right-2">
                     <Badge className={`${getConfidenceColor(anime.confidence)} bg-white/90 text-xs`}>
@@ -161,7 +206,9 @@ export default function RecommendationsPage() {
                   </div>
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg mb-1 text-gray-900 dark:text-white">{anime.title}</h3>
+                  <h3 className="font-semibold text-lg mb-1 text-gray-900 dark:text-white line-clamp-2">
+                    {anime.title}
+                  </h3>
                   <div className="flex items-center space-x-2 mb-2">
                     <div className="flex items-center space-x-1">
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
@@ -173,13 +220,20 @@ export default function RecommendationsPage() {
                     <span className="text-sm text-gray-600 dark:text-gray-400">{anime.year}</span>
                   </div>
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {anime.genre.map((g) => (
-                      <Badge key={g} variant="secondary" className="text-xs">
-                        {g}
+                    {anime.genres.slice(0, 3).map((genre) => (
+                      <Badge key={genre} variant="secondary" className="text-xs">
+                        {genre}
                       </Badge>
                     ))}
+                    {anime.genres.length > 3 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{anime.genres.length - 3}
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 italic">"{anime.reason}"</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 italic line-clamp-2">
+                    "{anime.reason}"
+                  </p>
                   <div className="flex space-x-2">
                     <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700">
                       <Plus className="w-4 h-4 mr-1" />
@@ -194,6 +248,26 @@ export default function RecommendationsPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        )}
+        
+        {!isLoading && recommendations.length === 0 && (
+          <div className="text-center py-12">
+            <Brain className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              No recommendations found
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Try adjusting your filters or refresh to get new recommendations.
+            </p>
+            <Button onClick={handleRefresh} disabled={isRefreshing}>
+              {isRefreshing ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4 mr-2" />
+              )}
+              Refresh Recommendations
+            </Button>
           </div>
         )}
       </div>

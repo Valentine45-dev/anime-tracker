@@ -20,7 +20,7 @@ export default function CommunitiesPage() {
       description: "Discuss your favorite action-packed shonen anime series",
       members: 15420,
       posts: 2341,
-      image: "/placeholder.svg?height=100&width=100&text=Shonen",
+      image: "/placeholder.jpg?height=100&width=100&text=Shonen",
       isJoined: true,
       category: "Genre",
       trending: true,
@@ -31,7 +31,7 @@ export default function CommunitiesPage() {
       description: "Celebrating the magical world of Studio Ghibli films",
       members: 8932,
       posts: 1205,
-      image: "/placeholder.svg?height=100&width=100&text=Ghibli",
+      image: "/placeholder.jpg?height=100&width=100&text=Ghibli",
       isJoined: false,
       category: "Studio",
       trending: false,
@@ -42,7 +42,7 @@ export default function CommunitiesPage() {
       description: "Get and share anime recommendations with fellow otakus",
       members: 23567,
       posts: 4521,
-      image: "/placeholder.svg?height=100&width=100&text=Recs",
+      image: "/placeholder.jpg?height=100&width=100&text=Recs",
       isJoined: true,
       category: "General",
       trending: true,
@@ -53,7 +53,7 @@ export default function CommunitiesPage() {
       description: "For those who prefer reading the source material",
       members: 12043,
       posts: 1876,
-      image: "/placeholder.svg?height=100&width=100&text=Manga",
+      image: "/placeholder.jpg?height=100&width=100&text=Manga",
       isJoined: false,
       category: "Manga",
       trending: false,
@@ -149,7 +149,7 @@ export default function CommunitiesPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-3">
                         <Image
-                          src={community.image || "/placeholder.svg"}
+                          src={community.image || "/placeholder.jpg"}
                           alt={community.name}
                           width={50}
                           height={50}
@@ -203,7 +203,7 @@ export default function CommunitiesPage() {
                     <CardHeader className="pb-3">
                       <div className="flex items-center space-x-3">
                         <Image
-                          src={community.image || "/placeholder.svg"}
+                          src={community.image || "/placeholder.jpg"}
                           alt={community.name}
                           width={50}
                           height={50}

@@ -1,43 +1,35 @@
-# 🎌 AniTrack - Advanced Anime Tracker Platform
+# 🎌 AniTrack - Personal Anime Tracker
 
-A comprehensive, full-featured anime tracking and community platform built with modern web technologies. Track your anime journey, discover new series, connect with fellow fans, and get personalized recommendations powered by AI.
+A modern, full-featured anime tracking platform built with Next.js 15 and Supabase. Track your anime journey, discover new series, and manage your personal anime lists with a beautiful, responsive interface.
 
-## ✨ Key Features
+## ✨ Implemented Features
 
 ### 🎯 Core Anime Management
-- **📊 Advanced Tracking**: Comprehensive anime list management with 5 status categories (Watching, Completed, On-Hold, Dropped, Plan to Watch)
-- **⭐ Rating System**: Rate anime with 1-10 scale and detailed reviews
-- **📈 Progress Tracking**: Episode progress, watch time analytics, and completion statistics
-- **📝 Personal Notes**: Add custom notes and tags to your anime entries
-- **🔄 Rewatch Support**: Track rewatch counts and multiple viewing sessions
+- **📊 Personal Anime Lists**: Complete anime list management with 5 status categories (Watching, Completed, On-Hold, Dropped, Plan to Watch)
+- **⭐ Rating System**: Rate anime with 1-10 star scale
+- **📈 Progress Tracking**: Track episode progress and completion status
+- **📝 Personal Notes**: Add custom notes to your anime entries
+- **🔄 Status Management**: Move anime between different status categories
 
 ### 🔍 Discovery & Search
-- **🔎 Advanced Search**: Powerful search with filters by genre, year, studio, status, and more
-- **📈 Trending Anime**: Real-time trending anime with popularity metrics
-- **🤖 AI Recommendations**: Intelligent recommendations based on your viewing history and preferences
-- **🎯 Smart Filtering**: Filter by multiple criteria including genres, studios, ratings, and airing status
+- **📈 Trending Anime**: Browse trending anime from AniList API
+- **🤖 AI Recommendations**: Get personalized anime recommendations
+- **🎯 Smart Filtering**: Filter anime by genres, studios, ratings, and more
+- **🔍 Anime Details**: Detailed anime information pages with full metadata
 
-### 👥 Community Features
-- **🏘️ Anime Communities**: Join and create communities for specific anime, genres, or interests
-- **💬 Discussion Forums**: Post discussions, share thoughts, and engage with the community
-- **❤️ Social Interactions**: Like posts, comments, and reviews
-- **👤 User Profiles**: Detailed user profiles with anime statistics and preferences
-- **🔔 Notifications**: Real-time notifications for community activities and updates
-
-### 🛠️ Advanced Features
-- **📊 Analytics Dashboard**: Comprehensive analytics for your anime consumption
+### 🛠️ Technical Features
+- **📊 Personal Dashboard**: View your anime organized by status
 - **🌙 Theme System**: Beautiful dark/light theme with system preference detection
 - **📱 Mobile-First**: Fully responsive design optimized for all devices
-- **⚡ Real-time Updates**: Live updates for trending content and community activities
+- **⚡ Real-time Updates**: Live updates when adding anime to your lists
 - **🔐 Secure Authentication**: Modern authentication with Supabase Auth
-- **📧 Email Notifications**: Automated email notifications for important events
+- **💾 Data Persistence**: All data stored securely in Supabase PostgreSQL database
 
-### 🎛️ Admin Panel
-- **📈 System Analytics**: Comprehensive admin dashboard with user metrics and system health
-- **👥 User Management**: Advanced user management and moderation tools
-- **📊 Content Moderation**: Tools for managing communities, posts, and user reports
-- **🔔 Notification Management**: System-wide notification management
-- **📧 Email Templates**: Customizable email templates for various system events
+### 🎛️ User Experience
+- **🎨 Modern UI**: Clean, intuitive interface built with shadcn/ui components
+- **⚡ Fast Performance**: Optimized with Next.js 15 and React 19
+- **🔄 Seamless Navigation**: Smooth transitions between pages and features
+- **📱 Cross-Platform**: Works perfectly on desktop, tablet, and mobile devices
 
 ## 🚀 Tech Stack
 
@@ -115,27 +107,47 @@ A comprehensive, full-featured anime tracking and community platform built with 
 
 5. **Set up the database**
    
-   Run the SQL schema in your Supabase SQL Editor (see `SUPABASE_CONFIG.md` for detailed instructions):
+   Run the SQL setup script in your Supabase SQL Editor:
    ```sql
-   -- Copy and paste the schema from lib/admin-setup.sql
+   -- Copy and paste the entire script from lib/fix-all-rls-policies.sql
+   -- This will create the development user and disable RLS for development
    ```
 
-6. **Configure Supabase settings**
-   
-   Follow the detailed setup guide in `SUPABASE_CONFIG.md` to configure:
-   - Authentication URLs
-   - Email templates
-   - Row Level Security (RLS) policies
-
-7. **Start the development server**
+6. **Start the development server**
    ```bash
    pnpm dev
    # or
    npm run dev
    ```
 
-8. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+7. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000) to see the application.
+
+## 🎮 How to Use
+
+### 📊 Dashboard
+- **View your personal anime lists** organized by status (Watching, Completed, On-Hold, Dropped, Plan to Watch)
+- **See your ratings and progress** for each anime
+- **Empty lists** show helpful links to discover new anime
+
+### 🔍 Discover Anime
+- **Trending Page**: Browse popular anime from AniList API
+- **Recommendations Page**: Get AI-powered anime recommendations
+- **Anime Details**: Click on any anime to see detailed information
+
+### ➕ Add Anime to Your List
+1. **Browse** trending anime or recommendations
+2. **Click "Add to List"** on any anime card
+3. **Choose status** (Watching, Completed, On-Hold, Dropped, Plan to Watch)
+4. **Rate the anime** (1-10 stars)
+5. **Add notes** (optional)
+6. **Click "Add to List"** to save
+
+### 📱 Your Personal Lists
+- **Dashboard** shows all your anime organized by status
+- **Real-time updates** when you add new anime
+- **Rating system** to track your preferences
+- **Progress tracking** for ongoing series
 
 ### 🔧 Additional Setup
 

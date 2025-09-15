@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { User, Mail, Calendar, Clock, Star, LogOut, Settings, Edit3, Save, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,6 +22,14 @@ export default function ProfilePage() {
     bio: profile?.bio || "",
     favoriteGenres: profile?.favorite_genres || []
   })
+  const [favoriteGenresInput, setFavoriteGenresInput] = useState("")
+
+  // Initialize input field when profile loads
+  useEffect(() => {
+    if (profile?.favorite_genres) {
+      setFavoriteGenresInput(profile.favorite_genres.join(", "))
+    }
+  }, [profile?.favorite_genres])
 
   const handleSignOut = async () => {
     try {
@@ -35,10 +43,12 @@ export default function ProfilePage() {
   const handleSave = async () => {
     try {
       setIsLoading(true)
+      // Process genres one final time before saving
+      const finalGenres = favoriteGenresInput.split(",").map(g => g.trim()).filter(g => g)
       await updateProfile({
         name: formData.name,
         bio: formData.bio,
-        favorite_genres: formData.favoriteGenres
+        favorite_genres: finalGenres
       })
       setIsEditing(false)
     } catch (error) {
@@ -48,12 +58,23 @@ export default function ProfilePage() {
     }
   }
 
+  const handleEdit = () => {
+    setFormData({
+      name: profile?.name || "",
+      bio: profile?.bio || "",
+      favoriteGenres: profile?.favorite_genres || []
+    })
+    setFavoriteGenresInput((profile?.favorite_genres || []).join(", "))
+    setIsEditing(true)
+  }
+
   const handleCancel = () => {
     setFormData({
       name: profile?.name || "",
       bio: profile?.bio || "",
       favoriteGenres: profile?.favorite_genres || []
     })
+    setFavoriteGenresInput((profile?.favorite_genres || []).join(", "))
     setIsEditing(false)
   }
 
@@ -107,25 +128,25 @@ export default function ProfilePage() {
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="px-4 py-6">
           <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Profile</h1>
+              <p className="text-gray-600 dark:text-gray-400">Manage your account settings</p>
+            </div>
             <div className="flex items-center space-x-3">
               <Link href="/">
                 <Button variant="outline" size="sm">
                   ← Back to Dashboard
                 </Button>
               </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Profile</h1>
-                <p className="text-gray-600 dark:text-gray-400">Manage your account settings</p>
-              </div>
+              <Button
+                variant="outline"
+                onClick={handleSignOut}
+                className="flex items-center space-x-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleSignOut}
-              className="flex items-center space-x-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign Out</span>
-            </Button>
           </div>
         </div>
       </div>
@@ -181,7 +202,7 @@ export default function ProfilePage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setIsEditing(true)}
+                      onClick={handleEdit}
                     >
                       <Edit3 className="w-4 h-4 mr-2" />
                       Edit
@@ -261,11 +282,37 @@ export default function ProfilePage() {
                   </label>
                   {isEditing ? (
                     <Input
-                      value={formData.favoriteGenres.join(", ")}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        favoriteGenres: e.target.value.split(",").map(g => g.trim()).filter(g => g)
-                      })}
+                      value={favoriteGenresInput}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        console.log('Input value:', value)
+                        setFavoriteGenresInput(value)
+                      }}
+                      onBlur={() => {
+                        // Process genres when user finishes typing
+                        const genres = favoriteGenresInput.split(",").map(g => g.trim()).filter(g => g)
+                        console.log('Processed genres on blur:', genres)
+                        setFormData({ 
+                          ...formData, 
+                          favoriteGenres: genres
+                        })
+                      }}
+                      onKeyDown={(e) => {
+                        console.log('Key pressed:', e.key)
+                        // Allow comma and other normal characters
+                        if (e.key === ',') {
+                          console.log('Comma key pressed')
+                        }
+                        // Process genres when Enter is pressed
+                        if (e.key === 'Enter') {
+                          const genres = favoriteGenresInput.split(",").map(g => g.trim()).filter(g => g)
+                          console.log('Processed genres on Enter:', genres)
+                          setFormData({ 
+                            ...formData, 
+                            favoriteGenres: genres
+                          })
+                        }
+                      }}
                       placeholder="Action, Comedy, Drama (comma separated)"
                     />
                   ) : (

@@ -100,25 +100,25 @@ export default function RecommendationsPage() {
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="px-4 py-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
                 <Brain className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AI Recommendations</h1>
-                <p className="text-gray-600 dark:text-gray-400">Personalized anime suggestions just for you</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">AI Recommendations</h1>
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Personalized anime suggestions just for you</p>
               </div>
             </div>
             <Link href="/">
-              <Button variant="outline">Back to Dashboard</Button>
+              <Button variant="outline" className="w-full sm:w-auto">Back to Dashboard</Button>
             </Link>
           </div>
 
           {/* Filters */}
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Filter by genre" />
               </SelectTrigger>
@@ -139,7 +139,7 @@ export default function RecommendationsPage() {
             </Select>
             
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>

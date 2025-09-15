@@ -1,0 +1,16 @@
+{
+  "name": "AniTrack - Track Your Anime Journey",
+  "short_name": "AniTrack",
+  "description": "Track your favorite anime and TV series, join communities, and get AI-powered recommendations",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

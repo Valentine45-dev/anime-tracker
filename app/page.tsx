@@ -244,10 +244,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-x-hidden">
       {/* Header */}
-      <div className="bg-blue-600 dark:bg-blue-700 text-white sticky top-0 z-50">
-        <div className="px-4 py-3">
+      <div className="bg-blue-600 dark:bg-blue-700 text-white sticky top-0 z-50 overflow-x-hidden">
+        <div className="px-4 py-3 max-w-full">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <Button
@@ -369,50 +369,63 @@ export default function Dashboard() {
 
           {/* Welcome Message */}
           <div className="mb-4">
-            <h2 className="text-lg font-semibold">Welcome back, {getDisplayName()}! 👋</h2>
-            <p className="text-blue-100 text-sm">You have {animeLists.watching.length} anime in progress</p>
+            <h2 className="text-lg font-semibold">
+              <span className="hidden sm:inline">Welcome back, {getDisplayName()}! 👋</span>
+              <span className="sm:hidden">Hi {getDisplayName()}! 👋</span>
+            </h2>
+            <p className="text-blue-100 text-sm">
+              <span className="hidden sm:inline">You have {animeLists.watching.length} anime in progress</span>
+              <span className="sm:hidden">{animeLists.watching.length} in progress</span>
+            </p>
           </div>
 
           {/* Navigation Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="bg-transparent border-0 p-0 h-auto space-x-0 overflow-x-auto">
+            <div className="overflow-x-auto scrollbar-hide">
+              <TabsList className="bg-transparent border-0 p-0 h-auto space-x-0 flex w-max min-w-full">
               <TabsTrigger
                 value="watching"
-                className="text-white data-[state=active]:text-white data-[state=active]:bg-blue-700 rounded-t-lg border-0 px-3 py-2 text-sm whitespace-nowrap"
+                className="text-white data-[state=active]:text-white data-[state=active]:bg-blue-700 rounded-t-lg border-0 px-2 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
               >
-                Watching ({getTabCount("watching")})
+                <span className="hidden sm:inline">Watching</span>
+                <span className="sm:hidden">Watch</span> ({getTabCount("watching")})
               </TabsTrigger>
               <TabsTrigger
                 value="completed"
-                className="text-white data-[state=active]:text-white data-[state=active]:bg-blue-700 rounded-t-lg border-0 px-3 py-2 text-sm whitespace-nowrap"
+                className="text-white data-[state=active]:text-white data-[state=active]:bg-blue-700 rounded-t-lg border-0 px-2 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
               >
-                Completed ({getTabCount("completed")})
+                <span className="hidden sm:inline">Completed</span>
+                <span className="sm:hidden">Done</span> ({getTabCount("completed")})
               </TabsTrigger>
               <TabsTrigger
                 value="onHold"
-                className="text-white data-[state=active]:text-white data-[state=active]:bg-blue-700 rounded-t-lg border-0 px-3 py-2 text-sm whitespace-nowrap"
+                className="text-white data-[state=active]:text-white data-[state=active]:bg-blue-700 rounded-t-lg border-0 px-2 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
               >
-                On-Hold ({getTabCount("onHold")})
+                <span className="hidden sm:inline">On-Hold</span>
+                <span className="sm:hidden">Hold</span> ({getTabCount("onHold")})
               </TabsTrigger>
               <TabsTrigger
                 value="dropped"
-                className="text-white data-[state=active]:text-white data-[state=active]:bg-blue-700 rounded-t-lg border-0 px-3 py-2 text-sm whitespace-nowrap"
+                className="text-white data-[state=active]:text-white data-[state=active]:bg-blue-700 rounded-t-lg border-0 px-2 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
               >
-                Dropped ({getTabCount("dropped")})
+                <span className="hidden sm:inline">Dropped</span>
+                <span className="sm:hidden">Drop</span> ({getTabCount("dropped")})
               </TabsTrigger>
               <TabsTrigger
                 value="planToWatch"
-                className="text-white data-[state=active]:text-white data-[state=active]:bg-blue-700 rounded-t-lg border-0 px-3 py-2 text-sm whitespace-nowrap"
+                className="text-white data-[state=active]:text-white data-[state=active]:bg-blue-700 rounded-t-lg border-0 px-2 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
               >
-                Plan to Watch ({getTabCount("planToWatch")})
+                <span className="hidden sm:inline">Plan to Watch</span>
+                <span className="sm:hidden">Plan</span> ({getTabCount("planToWatch")})
               </TabsTrigger>
             </TabsList>
+            </div>
           </Tabs>
         </div>
       </div>
 
       {/* Content */}
-      <div className="bg-white dark:bg-gray-800">
+      <div className="bg-white dark:bg-gray-800 overflow-x-hidden">
         <Tabs value={activeTab} className="w-full">
           <TabsContent value={activeTab} className="mt-0">
             {isLoading ? (
@@ -434,16 +447,16 @@ export default function Dashboard() {
                 <div className="text-gray-500 dark:text-gray-400">
                   <p className="text-lg font-medium mb-2">No anime in your {activeTab} list</p>
                   <p className="text-sm mb-4">Start adding anime from the Trending or Recommendations pages!</p>
-                  <div className="space-x-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <a 
                       href="/trending" 
-                      className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center"
                     >
                       Browse Trending
                     </a>
                     <a 
                       href="/recommendations" 
-                      className="inline-block bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                      className="inline-block bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-center"
                     >
                       Get Recommendations
                     </a>
@@ -495,7 +508,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Stats */}
-      <div className="bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="bg-gray-50 dark:bg-gray-900 p-4 overflow-x-hidden">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">

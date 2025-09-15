@@ -69,6 +69,23 @@ export default function Dashboard() {
       .slice(0, 2)
   }
 
+  const getDisplayName = () => {
+    if (profile?.name) {
+      return profile.name
+    }
+    if (user?.email) {
+      // Extract name from email (part before @)
+      const emailName = user.email.split('@')[0]
+      // Capitalize first letter and replace dots/underscores with spaces
+      return emailName
+        .replace(/[._]/g, ' ')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ')
+    }
+    return 'User'
+  }
+
   // Fetch anime data for each status
   const fetchAnimeData = async (status: string) => {
     try {
@@ -197,7 +214,7 @@ export default function Dashboard() {
                     <Avatar className="w-8 h-8">
                       <AvatarImage src={profile?.avatar_url || ""} alt={profile?.name || "User"} />
                       <AvatarFallback className="text-xs">
-                        {getInitials(profile?.name || user?.email || "U")}
+                        {getInitials(getDisplayName())}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -205,7 +222,7 @@ export default function Dashboard() {
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
-                      <p className="font-medium">{profile?.name || user?.email?.split("@")[0] || "User"}</p>
+                      <p className="font-medium">{getDisplayName()}</p>
                       <p className="w-[200px] truncate text-sm text-muted-foreground">
                         {user?.email}
                       </p>
@@ -262,7 +279,7 @@ export default function Dashboard() {
 
           {/* Welcome Message */}
           <div className="mb-4">
-            <h2 className="text-lg font-semibold">Welcome back, {profile?.name || user?.email}! 👋</h2>
+            <h2 className="text-lg font-semibold">Welcome back, {getDisplayName()}! 👋</h2>
             <p className="text-blue-100 text-sm">You have {animeLists.watching.length} anime in progress</p>
           </div>
 

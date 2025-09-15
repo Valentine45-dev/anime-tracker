@@ -66,6 +66,23 @@ export default function ProfilePage() {
       .slice(0, 2)
   }
 
+  const getDisplayName = () => {
+    if (profile?.name) {
+      return profile.name
+    }
+    if (user?.email) {
+      // Extract name from email (part before @)
+      const emailName = user.email.split('@')[0]
+      // Capitalize first letter and replace dots/underscores with spaces
+      return emailName
+        .replace(/[._]/g, ' ')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ')
+    }
+    return 'User'
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -124,12 +141,12 @@ export default function ProfilePage() {
                   <Avatar className="w-24 h-24">
                     <AvatarImage src={profile?.avatar_url || ""} alt={profile?.name || "User"} />
                     <AvatarFallback className="text-2xl">
-                      {getInitials(profile?.name || user.email || "U")}
+                      {getInitials(getDisplayName())}
                     </AvatarFallback>
                   </Avatar>
                 </div>
                 <CardTitle className="text-xl">
-                  {profile?.name || user.email?.split("@")[0] || "User"}
+                  {getDisplayName()}
                 </CardTitle>
                 <p className="text-gray-600 dark:text-gray-400">
                   {user.email}

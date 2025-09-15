@@ -1,14 +1,29 @@
-// Simple authentication helper for development
-// In production, you would implement proper JWT token validation
+// Authentication helper for Supabase integration
+import { supabase } from './supabase'
 
-export function getCurrentUserId(): string {
-  // For development, return a consistent user ID (valid UUID format)
-  // In production, extract from JWT token or session
-  return '550e8400-e29b-41d4-a716-446655440000'
+export async function getCurrentUserId(): Promise<string | null> {
+  try {
+    // Get current session
+    const { data: { session }, error } = await supabase.auth.getSession()
+    
+    if (error || !session?.user) {
+      console.log('No active session found')
+      return null
+    }
+
+    return session.user.id
+  } catch (error) {
+    console.error('Error getting current user ID:', error)
+    return null
+  }
 }
 
-export function isAuthenticated(): boolean {
-  // For development, always return true
-  // In production, validate JWT token
-  return true
+export async function isAuthenticated(): Promise<boolean> {
+  try {
+    const userId = await getCurrentUserId()
+    return userId !== null
+  } catch (error) {
+    console.error('Error checking authentication:', error)
+    return false
+  }
 }

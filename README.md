@@ -149,17 +149,30 @@ A modern, full-featured anime tracking platform built with Next.js 15 and Supaba
 - **Rating system** to track your preferences
 - **Progress tracking** for ongoing series
 
-### 🔧 Additional Setup
+   ### 🔧 Admin Setup
 
-#### Admin Panel Setup
-1. Create your first admin user through the signup process
-2. Navigate to `/admin/setup` to initialize admin settings
-3. Configure email templates and system preferences
+#### Step 1: Database Setup
+1. Go to your Supabase Dashboard
+2. Navigate to SQL Editor
+3. Copy and paste the SQL script from `/admin/setup` page
+4. Click "Run" to execute the script
 
-#### Email Configuration
-1. Set up email service in Supabase dashboard
-2. Configure SMTP settings for notifications
-3. Customize email templates in `/admin/settings/email`
+#### Step 2: Create Admin Account
+1. Go to `/admin/create` to create your first super admin account
+2. Enter your name, email, and password
+3. Click "Create Super Admin"
+4. You'll be redirected to the admin dashboard
+
+#### Step 3: Access Admin Features
+- **Admin Dashboard**: `/admin` - View system analytics and user management
+- **Admin Login**: `/admin/login` - Sign in to admin panel
+- **Admin Setup**: `/admin/setup` - Complete setup guide with SQL scripts
+
+#### Admin Features
+- **User Management**: View and manage user accounts
+- **System Analytics**: Monitor user activity and system health
+- **Content Moderation**: Manage communities and user reports
+- **Audit Logging**: Track all admin actions for security
 
 ## 🔌 API Endpoints
 

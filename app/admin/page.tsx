@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSupabaseAuth } from '@/components/providers/supabase-auth-provider'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Shield } from 'lucide-react'
 
 interface DashboardData {
   overview: {
@@ -16,6 +17,8 @@ interface DashboardData {
     totalAnimeEntries: number
     totalCommunities: number
     totalWatchTime: number
+    totalAnimeMetadata: number
+    averageAnimeScore: number
   }
   users: {
     growth: {
@@ -35,30 +38,36 @@ interface DashboardData {
 }
 
 export default function AdminDashboard() {
-  const { user, profile } = useSupabaseAuth()
+  const { user, profile, session } = useSupabaseAuth()
+  const router = useRouter()
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    if (user) {
+    if (user && session) {
       checkAdminStatus()
       fetchDashboardData()
     }
-  }, [user])
+  }, [user, session])
 
   const checkAdminStatus = async () => {
     try {
       // Check if user is authenticated
-      if (!user) {
+      if (!user || !session) {
+        console.log('No user or session found')
         setIsAdmin(false)
         return
       }
 
+      console.log('Checking admin status for user:', user.email)
+
       // Check if admin system is initialized
       const initResponse = await fetch('/api/admin/init')
       const initData = await initResponse.json()
+      
+      console.log('Admin system initialized:', initData.initialized)
       
       if (!initData.initialized) {
         setIsAdmin(false)
@@ -68,16 +77,19 @@ export default function AdminDashboard() {
       // Check if current user is admin
       const response = await fetch('/api/admin/check', {
         headers: {
-          'Authorization': `Bearer ${user.access_token}`
+          'Authorization': `Bearer ${session.access_token}`
         }
       })
 
+      console.log('Admin check response status:', response.status)
+
       if (response.ok) {
+        console.log('User is admin')
         setIsAdmin(true)
       } else {
+        console.log('User is not admin, response:', await response.text())
         setIsAdmin(false)
-        // Redirect to admin login if not admin
-        router.push('/admin/login')
+        // Don't redirect automatically, let user choose to initialize
       }
     } catch (error) {
       console.error('Error checking admin status:', error)
@@ -90,7 +102,7 @@ export default function AdminDashboard() {
       setLoading(true)
       const response = await fetch('/api/admin/dashboard', {
         headers: {
-          'Authorization': `Bearer ${user?.access_token}`
+          'Authorization': `Bearer ${session?.access_token}`
         }
       })
 
@@ -110,15 +122,16 @@ export default function AdminDashboard() {
 
   const initializeAdmin = async () => {
     try {
-      const response = await fetch('/api/admin/init', {
+      // Create admin record for current user
+      const response = await fetch('/api/admin/create-admin', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
           email: user?.email,
-          password: 'admin123', // You should change this
-          name: profile?.name || 'Admin User'
+          name: profile?.name || user?.email?.split('@')[0] || 'Admin User'
         })
       })
 
@@ -160,23 +173,117 @@ export default function AdminDashboard() {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Initialize Admin System</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p>Admin system not initialized. Click below to create your first super admin account.</p>
-            <Button onClick={initializeAdmin} className="w-full">
-              Initialize Admin System
-            </Button>
-            {error && (
-              <div className="text-red-600 text-sm">
-                {error}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold text-gray-900 mb-4">Admin Access</h1>
+              <p className="text-xl text-gray-600">
+                You need admin privileges to access this dashboard
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Make Current User Admin */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Shield className="w-6 h-6 mr-2 text-blue-600" />
+                    Make Me Admin
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-600">
+                    Make your current account an admin. This is the quickest way to get started.
+                  </p>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      <strong>Current User:</strong> {user?.email}
+                    </p>
+                  </div>
+                  <Button onClick={initializeAdmin} className="w-full" disabled={loading}>
+                    {loading ? "Creating Admin..." : "Make Me Admin"}
+                  </Button>
+                  {error && (
+                    <div className="text-red-600 text-sm">
+                      {error}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Create New Admin Account */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Shield className="w-6 h-6 mr-2 text-green-600" />
+                    Create New Admin
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-600">
+                    Create a separate admin account with different credentials.
+                  </p>
+                  <div className="space-y-2">
+                    <Button asChild className="w-full">
+                      <Link href="/admin/create">Create Admin Account</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href="/admin/login">Admin Login</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Help Section */}
+            <div className="mt-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Shield className="w-6 h-6 mr-2 text-orange-600" />
+                    Need Help?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <h3 className="font-semibold mb-2">Database Setup</h3>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Make sure you've run the SQL setup script in Supabase
+                      </p>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href="/admin/setup">Setup Guide</Link>
+                      </Button>
+                    </div>
+                    <div className="text-center">
+                      <h3 className="font-semibold mb-2">Troubleshooting</h3>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Check console logs for detailed error information
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => window.open('https://supabase.com/docs', '_blank')}
+                      >
+                        Supabase Docs
+                      </Button>
+                    </div>
+                    <div className="text-center">
+                      <h3 className="font-semibold mb-2">Support</h3>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Check the README for detailed setup instructions
+                      </p>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href="/">Back to Home</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -213,9 +320,30 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Navigation Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {profile?.name || user?.email}!</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-gray-600">Welcome back, {profile?.name || user?.email}!</p>
+            </div>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={fetchDashboardData}
+                disabled={loading}
+              >
+                {loading ? "Refreshing..." : "Refresh Data"}
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/setup">Setup Guide</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/">Back to App</Link>
+              </Button>
+            </div>
+          </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
@@ -275,6 +403,32 @@ export default function AdminDashboard() {
                   <div className="text-2xl font-bold">{dashboardData?.overview.totalWatchTime || 0}h</div>
                   <p className="text-xs text-muted-foreground">
                     Combined watch time
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Anime Metadata</CardTitle>
+                  <Badge variant="secondary">{dashboardData?.overview.totalAnimeMetadata || 0}</Badge>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{dashboardData?.overview.totalAnimeMetadata || 0}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Cached anime data
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Average Score</CardTitle>
+                  <Badge variant="secondary">{dashboardData?.overview.averageAnimeScore || 0}/10</Badge>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{dashboardData?.overview.averageAnimeScore || 0}/10</div>
+                  <p className="text-xs text-muted-foreground">
+                    Average anime rating
                   </p>
                 </CardContent>
               </Card>

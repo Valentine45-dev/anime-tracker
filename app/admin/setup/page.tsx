@@ -34,9 +34,180 @@ export default function AdminSetupPage() {
                 <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
                   <li>Go to your Supabase Dashboard</li>
                   <li>Navigate to SQL Editor</li>
-                  <li>Copy the contents of <code className="bg-gray-100 px-2 py-1 rounded">lib/admin-setup.sql</code></li>
-                  <li>Paste and run the SQL</li>
+                  <li>Copy and paste the SQL script below</li>
+                  <li>Click "Run" to execute the script</li>
                 </ol>
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                  <pre className="text-xs overflow-x-auto">
+{`-- Admin table setup for AniTracker
+-- Run this in your Supabase SQL Editor
+
+-- Create admins table
+CREATE TABLE IF NOT EXISTS admins (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
+  email TEXT UNIQUE NOT NULL,
+  role TEXT DEFAULT 'admin' CHECK (role IN ('super_admin', 'admin', 'moderator')),
+  permissions TEXT[] DEFAULT ARRAY['read', 'write'],
+  is_active BOOLEAN DEFAULT TRUE,
+  created_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create admin_actions table for audit logging
+CREATE TABLE IF NOT EXISTS admin_actions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  admin_id UUID REFERENCES admins(id) ON DELETE CASCADE,
+  action_type TEXT NOT NULL,
+  target_type TEXT,
+  target_id TEXT,
+  details JSONB DEFAULT '{}',
+  ip_address INET,
+  user_agent TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_admins_user_id ON admins(user_id);
+CREATE INDEX IF NOT EXISTS idx_admins_email ON admins(email);
+CREATE INDEX IF NOT EXISTS idx_admins_role ON admins(role);
+CREATE INDEX IF NOT EXISTS idx_admin_actions_admin_id ON admin_actions(admin_id);
+CREATE INDEX IF NOT EXISTS idx_admin_actions_created_at ON admin_actions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_admin_actions_action_type ON admin_actions(action_type);
+
+-- Enable Row Level Security
+ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_actions ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for admins table
+CREATE POLICY "Only admins can view admins" ON admins
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM admins 
+      WHERE user_id = auth.uid() 
+      AND is_active = TRUE
+    )
+  );
+
+CREATE POLICY "Only super admins can manage admins" ON admins
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM admins 
+      WHERE user_id = auth.uid() 
+      AND role = 'super_admin' 
+      AND is_active = TRUE
+    )
+  );
+
+-- Create RLS policies for admin_actions table
+CREATE POLICY "Only admins can view admin actions" ON admin_actions
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM admins 
+      WHERE user_id = auth.uid() 
+      AND is_active = TRUE
+    )
+  );
+
+CREATE POLICY "Only admins can create admin actions" ON admin_actions
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM admins 
+      WHERE user_id = auth.uid() 
+      AND is_active = TRUE
+    )
+  );
+
+-- Function to check if user is admin
+CREATE OR REPLACE FUNCTION is_admin(user_uuid UUID DEFAULT auth.uid())
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM admins 
+    WHERE user_id = user_uuid 
+    AND is_active = TRUE
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to get admin role
+CREATE OR REPLACE FUNCTION get_admin_role(user_uuid UUID DEFAULT auth.uid())
+RETURNS TEXT AS $$
+BEGIN
+  RETURN (
+    SELECT role FROM admins 
+    WHERE user_id = user_uuid 
+    AND is_active = TRUE
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to check admin permissions
+CREATE OR REPLACE FUNCTION has_admin_permission(
+  user_uuid UUID DEFAULT auth.uid(),
+  permission TEXT DEFAULT 'read'
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM admins 
+    WHERE user_id = user_uuid 
+    AND is_active = TRUE
+    AND permission = ANY(permissions)
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to log admin actions
+CREATE OR REPLACE FUNCTION log_admin_action(
+  action_type TEXT,
+  target_type TEXT DEFAULT NULL,
+  target_id TEXT DEFAULT NULL,
+  details JSONB DEFAULT '{}',
+  ip_address INET DEFAULT NULL,
+  user_agent TEXT DEFAULT NULL
+)
+RETURNS UUID AS $$
+DECLARE
+  action_id UUID;
+  admin_record admins%ROWTYPE;
+BEGIN
+  -- Get current admin
+  SELECT * INTO admin_record FROM admins WHERE user_id = auth.uid() AND is_active = TRUE;
+  
+  IF admin_record.id IS NULL THEN
+    RAISE EXCEPTION 'User is not an active admin';
+  END IF;
+  
+  -- Log the action
+  INSERT INTO admin_actions (
+    admin_id, action_type, target_type, target_id, 
+    details, ip_address, user_agent
+  ) VALUES (
+    admin_record.id, action_type, target_type, target_id,
+    details, ip_address, user_agent
+  ) RETURNING id INTO action_id;
+  
+  RETURN action_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Update trigger for admins table
+CREATE OR REPLACE FUNCTION update_admins_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_admins_updated_at
+  BEFORE UPDATE ON admins
+  FOR EACH ROW
+  EXECUTE FUNCTION update_admins_updated_at();`}
+                  </pre>
+                </div>
                 <Badge variant="outline" className="mt-4">
                   Creates: admins, admin_actions tables + functions
                 </Badge>
@@ -56,14 +227,19 @@ export default function AdminSetupPage() {
                   After running the SQL, create your first super admin account.
                 </p>
                 <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
-                  <li>Go to <code className="bg-gray-100 px-2 py-1 rounded">/admin/login</code></li>
-                  <li>Enter your email and password</li>
+                  <li>Go to the Create Admin page</li>
+                  <li>Enter your name, email, and password</li>
                   <li>Click "Create Super Admin"</li>
-                  <li>You'll be automatically logged in</li>
+                  <li>You'll be redirected to the admin dashboard</li>
                 </ol>
-                <Button asChild className="w-full mt-4">
-                  <Link href="/admin/login">Create Admin Account</Link>
-                </Button>
+                <div className="space-y-2">
+                  <Button asChild className="w-full">
+                    <Link href="/admin/create">Create Admin Account</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href="/admin/login">Admin Login</Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 

@@ -39,7 +39,7 @@ interface DashboardAnime {
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("watching")
-  const { user, profile, signOut } = useSupabaseAuth()
+  const { user, profile, session, signOut } = useSupabaseAuth()
   const { theme, toggleTheme } = useTheme()
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [animeLists, setAnimeLists] = useState<Record<string, DashboardAnime[]>>({
@@ -91,7 +91,17 @@ export default function Dashboard() {
   const fetchAnimeData = async (apiStatus: string, tabName: string) => {
     try {
       console.log(`Fetching anime for status: ${apiStatus} -> tab: ${tabName}`)
-      const response = await fetch(`/api/supabase-user/anime-list?status=${apiStatus}&limit=8`)
+      
+      if (!session?.access_token) {
+        console.log('No session token available')
+        return
+      }
+      
+      const response = await fetch(`/api/supabase-user/anime-list?status=${apiStatus}&limit=8`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
       const data = await response.json()
       
       console.log(`API response for ${apiStatus}:`, data)
@@ -175,6 +185,11 @@ export default function Dashboard() {
   // Load all anime data on component mount
   useEffect(() => {
     const loadAllAnime = async () => {
+      if (!session?.access_token) {
+        console.log('No session available, skipping data fetch')
+        return
+      }
+
       setIsLoading(true)
       const statuses = [
         { tab: 'watching', api: 'watching' },
@@ -189,7 +204,7 @@ export default function Dashboard() {
     }
 
     loadAllAnime()
-  }, [])
+  }, [session?.access_token])
 
   const renderStars = (rating: number) => {
     return (

@@ -66,7 +66,7 @@ export function AnimeCard({
   onAddToList,
   className = ""
 }: AnimeCardProps) {
-  const { user } = useSupabaseAuth()
+  const { user, session } = useSupabaseAuth()
   const [isAddingToList, setIsAddingToList] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState(userStatus || "plan-to-watch")
   const [selectedRating, setSelectedRating] = useState(userRating || 0)
@@ -95,6 +95,7 @@ export function AnimeCard({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify(requestData),
       })
@@ -138,6 +139,7 @@ export function AnimeCard({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify({
           animeMetadataId: anime.id,

@@ -1,19 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { getUserAnimeList, addAnimeToList } from '@/lib/supabase-anime'
-import { getCurrentUserId, isAuthenticated } from '@/lib/auth-helper'
+
+async function getUserIdFromRequest(request: NextRequest): Promise<string | null> {
+  try {
+    // Get authorization header
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return null
+    }
+
+    const token = authHeader.split(' ')[1]
+    
+    // Verify JWT token with Supabase
+    const { data: { user }, error } = await supabase.auth.getUser(token)
+    if (error || !user) {
+      console.log('Invalid token:', error)
+      return null
+    }
+
+    return user.id
+  } catch (error) {
+    console.error('Error getting user from token:', error)
+    return null
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if user is authenticated
-    if (!isAuthenticated()) {
+    // Get user ID from authorization header
+    const userId = await getUserIdFromRequest(request)
+    if (!userId) {
       return NextResponse.json(
         { error: 'User not authenticated' },
         { status: 401 }
       )
     }
-
-    const userId = getCurrentUserId()
 
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
@@ -69,15 +91,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is authenticated
-    if (!isAuthenticated()) {
+    // Get user ID from authorization header
+    const userId = await getUserIdFromRequest(request)
+    if (!userId) {
       return NextResponse.json(
         { error: 'User not authenticated' },
         { status: 401 }
       )
     }
-
-    const userId = getCurrentUserId()
 
     const body = await request.json()
     console.log('Received request body:', body)
@@ -238,7 +259,7 @@ export async function POST(request: NextRequest) {
     console.error('Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-      userId: getCurrentUserId(),
+      userId: 'unknown',
       animeMetadataId: 'unknown'
     })
     

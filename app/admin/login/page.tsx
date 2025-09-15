@@ -211,17 +211,21 @@ export default function AdminLoginPage() {
               <ArrowLeft className="w-4 h-4 mr-1" />
               Back to User Login
             </Link>
-            {isInitialized === false && (
-              <div className="mt-2">
-                <Link 
-                  href="/admin/setup" 
-                  className="inline-flex items-center text-sm text-green-600 hover:underline"
-                >
-                  <Shield className="w-4 h-4 mr-1" />
-                  Setup Guide
-                </Link>
-              </div>
-            )}
+            <div className="mt-4 space-y-2">
+              <Button asChild className="w-full">
+                <Link href="/admin">Go to Admin Dashboard</Link>
+              </Button>
+              {isInitialized === false && (
+                <>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href="/admin/create">Create Admin Account</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href="/admin/setup">Setup Guide</Link>
+                  </Button>
+                </>
+              )}
+            </div>
             <p className="text-xs text-gray-500">
               {isInitialized === false 
                 ? "This will create the first super admin account" 

@@ -447,16 +447,16 @@ export default function Dashboard() {
                 <div className="text-gray-500 dark:text-gray-400">
                   <p className="text-lg font-medium mb-2">No anime in your {activeTab} list</p>
                   <p className="text-sm mb-4">Start adding anime from the Trending or Recommendations pages!</p>
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <div className="space-x-4">
                     <a 
                       href="/trending" 
-                      className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center"
+                      className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                     >
                       Browse Trending
                     </a>
                     <a 
                       href="/recommendations" 
-                      className="inline-block bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-center"
+                      className="inline-block bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
                     >
                       Get Recommendations
                     </a>

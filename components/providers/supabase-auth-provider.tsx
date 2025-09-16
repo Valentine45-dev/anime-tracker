@@ -35,14 +35,26 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
           setSession(session)
           setUser(session.user)
           
-          // Get user profile
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          
-          setProfile(profileData)
+          // Get user profile with error handling using API route
+          try {
+            const response = await fetch('/api/profile', {
+              headers: {
+                'Authorization': `Bearer ${session.access_token}`,
+                'Content-Type': 'application/json',
+              },
+            })
+            
+            if (response.ok) {
+              const { profile } = await response.json()
+              setProfile(profile)
+            } else {
+              console.error('Initial profile fetch error:', response.status, response.statusText)
+              setProfile(null)
+            }
+          } catch (error) {
+            console.error('Error in initial profile fetch:', error)
+            setProfile(null)
+          }
         }
       } catch (error) {
         console.error('Error getting initial session:', error)
@@ -60,22 +72,22 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       setLoading(true)
       
       if (session?.user) {
-        // Get user profile with timeout
+        // Get user profile with improved error handling using API route
         try {
-          const profilePromise = supabase
-            .from('profiles')
-            .select('id, email, name, avatar_url, bio, watch_time_hours, favorite_genres, created_at, updated_at')
-            .eq('id', session.user.id)
-            .single()
+          const response = await fetch('/api/profile', {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          })
           
-          // Add 5 second timeout
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
-          )
-          
-          const { data: profileData } = await Promise.race([profilePromise, timeoutPromise]) as any
-          
-          setProfile(profileData)
+          if (response.ok) {
+            const { profile } = await response.json()
+            setProfile(profile)
+          } else {
+            console.error('Profile fetch error:', response.status, response.statusText)
+            setProfile(null)
+          }
         } catch (error) {
           console.error('Error fetching profile:', error)
           setProfile(null)
@@ -192,24 +204,25 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   }
 
   const updateProfile = async (updates: Partial<Profile>) => {
-    if (!user) return
+    if (!user || !session) return
 
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id)
-        .select()
-        .single()
+      const response = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      })
 
-      if (error) {
-        throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update profile')
       }
 
-      setProfile(data)
+      const { profile } = await response.json()
+      setProfile(profile)
     } catch (error) {
       console.error('Update profile error:', error)
       throw error

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -57,6 +57,16 @@ export default function SignupPage() {
   const [submitError, setSubmitError] = useState("")
   const { signUp } = useSupabaseAuth()
   const router = useRouter()
+  const [emailTimeout, setEmailTimeout] = useState<NodeJS.Timeout | null>(null)
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (emailTimeout) {
+        clearTimeout(emailTimeout)
+      }
+    }
+  }, [emailTimeout])
 
   // Validation functions
   const validateName = (name: string) => {
@@ -83,19 +93,60 @@ export default function SignupPage() {
 
     // Check if email already exists
     try {
+      console.log('Checking email availability for:', email)
       const response = await fetch(`/api/auth/create-user?email=${encodeURIComponent(email)}`)
-      const data = await response.json()
       
-      if (data.exists) {
+      if (!response.ok) {
+        console.error('Email check failed:', response.status, response.statusText)
+        const errorText = await response.text()
+        console.error('Error response:', errorText)
+        return { isValid: false, message: "Failed to check email availability", checking: false }
+      }
+      
+      const data = await response.json()
+      console.log('Email check response:', data)
+      
+      if (data.exists === true) {
         return { isValid: false, message: "An account with this email already exists", checking: false }
       }
       
-      return { isValid: true, message: "", checking: false }
+      if (data.exists === false) {
+        return { isValid: true, message: "", checking: false }
+      }
+      
+      // Fallback if response format is unexpected
+      console.warn('Unexpected response format:', data)
+      return { isValid: false, message: "Unable to verify email availability", checking: false }
     } catch (error) {
-      // If check fails, still allow the email format to be valid
-      return { isValid: true, message: "", checking: false }
+      console.error('Email validation error:', error)
+      return { isValid: false, message: "Failed to validate email", checking: false }
     }
   }
+
+  // Debounced email validation
+  const debouncedEmailValidation = useCallback((email: string) => {
+    // Clear existing timeout
+    if (emailTimeout) {
+      clearTimeout(emailTimeout)
+    }
+
+    // Set checking state immediately
+    setValidation(prev => ({
+      ...prev,
+      email: { isValid: false, message: "Checking...", checking: true }
+    }))
+
+    // Set new timeout
+    const timeout = setTimeout(async () => {
+      const result = await validateEmail(email)
+      setValidation(prev => ({
+        ...prev,
+        email: result
+      }))
+    }, 500) // 500ms delay
+
+    setEmailTimeout(timeout)
+  }, [emailTimeout])
 
   const validatePassword = (password: string) => {
     const requirements = {
@@ -177,16 +228,7 @@ export default function SignupPage() {
         }))
         break
       case 'email':
-        setValidation(prev => ({
-          ...prev,
-          email: { isValid: false, message: "Checking...", checking: true }
-        }))
-        validateEmail(value).then(result => {
-          setValidation(prev => ({
-            ...prev,
-            email: result
-          }))
-        })
+        debouncedEmailValidation(value)
         break
       case 'password':
         const passwordValidation = validatePassword(value)
@@ -273,7 +315,7 @@ export default function SignupPage() {
                   ) : validation.email.isValid ? (
                     <>
                       <Check className="w-4 h-4 mr-1" />
-                      Email is available
+                      Email is valid
                     </>
                   ) : (
                     <>

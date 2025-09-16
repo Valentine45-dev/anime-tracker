@@ -88,14 +88,14 @@ export default function LoginPage() {
                 <Shield className="w-4 h-4 mr-1" />
                 Admin Login
               </Link>
-              <div className="text-center">
+              {/* <div className="text-center">
                 <Link 
                   href="/auth/resend-confirmation" 
                   className="text-sm text-gray-600 hover:underline"
                 >
                   Didn't receive confirmation email?
                 </Link>
-              </div>
+              </div> */}
               <p className="text-xs text-gray-500 mt-1">
                 For administrators only
               </p>

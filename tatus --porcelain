@@ -1,5 +1,0 @@
-app/api/supabase-user/anime-list/route.ts
-app/page.tsx
-components/ui/anime-card.tsx
-lib/create-dev-user.sql
-lib/fix-all-rls-policies.sql

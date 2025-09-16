@@ -1,0 +1,348 @@
+# AniTrack - Complete Project Structure Explanation
+
+## 📁 ROOT DIRECTORY FILES
+
+### Configuration Files
+- **package.json** - Node.js project configuration with dependencies and scripts
+- **package-lock.json** - Locked dependency versions for consistent installs
+- **pnpm-lock.yaml** - PNPM package manager lock file
+- **tsconfig.json** - TypeScript configuration for type checking and compilation
+- **next.config.mjs** - Next.js configuration file for build settings and plugins
+- **tailwind.config.ts** - Tailwind CSS configuration for styling system
+- **postcss.config.mjs** - PostCSS configuration for CSS processing
+- **components.json** - shadcn/ui component library configuration
+- **next-env.d.ts** - Next.js TypeScript environment declarations
+
+### Environment & Documentation
+- **env.example** - Template for environment variables (copy to .env.local)
+- **README.md** - Project documentation and setup instructions
+- **Guideline.md** - Project walkthrough presentation guide
+- **Capstone_Project_Submission_Guidelines_July2025.pdf** - Internship submission guidelines
+
+### Migration & Setup Files
+- **MIGRATION_PLAN.md** - Database migration planning document
+- **SUPABASE_CONFIG.md** - Supabase configuration and setup guide
+- **SUPABASE_MIGRATION_GUIDE.md** - Step-by-step Supabase migration instructions
+- **EMAIL_TEMPLATES.md** - Email template documentation
+
+### Status Files
+- **tatus** - Git status output file (temporary)
+- **tatus --porcelain** - Git status in porcelain format (temporary)
+
+---
+
+## 📁 APP DIRECTORY (Next.js App Router)
+
+### Main Application Files
+- **layout.tsx** - Root layout component with global providers and metadata
+- **page.tsx** - Home page component (main dashboard)
+- **globals.css** - Global CSS styles and Tailwind imports
+- **loading.tsx** - Global loading component for page transitions
+
+### Authentication Pages (/auth)
+- **auth/login/page.tsx** - User login page with form validation
+- **auth/signup/page.tsx** - User registration page
+- **auth/callback/page.tsx** - OAuth callback handler for external auth
+- **auth/confirm/page.tsx** - Email confirmation page
+- **auth/resend-confirmation/page.tsx** - Resend confirmation email page
+
+### Core Feature Pages
+- **profile/page.tsx** - User profile management page
+- **trending/page.tsx** - Trending anime discovery page
+- **recommendations/page.tsx** - AI-powered anime recommendations
+- **communities/page.tsx** - Community features page
+- **communities/loading.tsx** - Loading state for communities page
+
+### Anime Detail Pages (/anime)
+- **anime/[id]/page.tsx** - Dynamic anime detail page with full information
+
+### Admin Panel (/admin)
+- **admin/page.tsx** - Main admin dashboard with analytics
+- **admin/login/page.tsx** - Admin login page
+- **admin/create/page.tsx** - Create new admin account page
+- **admin/setup/page.tsx** - Admin system setup guide page
+- **admin/settings/email/page.tsx** - Email settings configuration
+
+### Test Pages
+- **test/page.tsx** - Development testing page with sample data
+
+---
+
+## 📁 API ROUTES (/app/api)
+
+### Authentication API (/api/auth)
+- **auth/login/route.ts** - User login endpoint with JWT generation
+- **auth/signup/route.ts** - User registration endpoint
+- **auth/me/route.ts** - Get current user information
+- **auth/supabase-login/route.ts** - Supabase authentication login
+- **auth/supabase-logout/route.ts** - Supabase authentication logout
+- **auth/supabase-signup/route.ts** - Supabase authentication signup
+- **auth/create-user/route.ts** - Create user account endpoint
+
+### Anime API (/api/anime)
+- **anime/trending/route.ts** - Fetch trending anime from AniList API
+- **anime/search/route.ts** - Search anime by query parameters
+- **anime/[id]/route.ts** - Get specific anime details with caching
+
+### User Anime Management (/api/supabase-user)
+- **supabase-user/anime-list/route.ts** - CRUD operations for user anime lists
+
+### Admin API (/api/admin)
+- **admin/check/route.ts** - Check if user has admin privileges
+- **admin/dashboard/route.ts** - Fetch admin dashboard analytics data
+- **admin/init/route.ts** - Initialize admin system (create first admin)
+- **admin/create-admin/route.ts** - Create new admin account
+- **admin/analytics/route.ts** - Advanced analytics and reporting
+- **admin/users/route.ts** - User management operations
+- **admin/notifications/route.ts** - Admin notification system
+- **admin/migration/route.ts** - Database migration utilities
+
+### Additional API Endpoints
+- **communities/route.ts** - Community features API
+- **recommendations/route.ts** - AI recommendation engine API
+- **dashboard/anime/route.ts** - Dashboard anime data API
+- **supabase-anime/search/route.ts** - Supabase anime search API
+- **user/anime-list/route.ts** - User anime list management
+- **test-db/route.ts** - Database connection testing endpoint
+
+---
+
+## 📁 COMPONENTS DIRECTORY
+
+### UI Components (/components/ui)
+- **anime-card.tsx** - Custom anime card component with rating and add-to-list
+- **button.tsx** - Reusable button component with variants
+- **card.tsx** - Card container component
+- **input.tsx** - Form input component
+- **dialog.tsx** - Modal dialog component
+- **tabs.tsx** - Tab navigation component
+- **badge.tsx** - Status badge component
+- **avatar.tsx** - User avatar component
+- **select.tsx** - Dropdown select component
+- **toast.tsx** - Toast notification component
+- **toaster.tsx** - Toast container component
+- **progress.tsx** - Progress bar component
+- **skeleton.tsx** - Loading skeleton component
+- **alert.tsx** - Alert message component
+- **alert-dialog.tsx** - Confirmation dialog component
+- **accordion.tsx** - Collapsible content component
+- **aspect-ratio.tsx** - Aspect ratio container component
+- **breadcrumb.tsx** - Navigation breadcrumb component
+- **calendar.tsx** - Date picker calendar component
+- **carousel.tsx** - Image/content carousel component
+- **chart.tsx** - Data visualization chart component
+- **checkbox.tsx** - Checkbox input component
+- **collapsible.tsx** - Collapsible content component
+- **command.tsx** - Command palette component
+- **context-menu.tsx** - Right-click context menu component
+- **drawer.tsx** - Mobile drawer component
+- **dropdown-menu.tsx** - Dropdown menu component
+- **form.tsx** - Form wrapper component with validation
+- **hover-card.tsx** - Hover card component
+- **input-otp.tsx** - OTP input component
+- **label.tsx** - Form label component
+- **menubar.tsx** - Menu bar component
+- **navigation-menu.tsx** - Navigation menu component
+- **pagination.tsx** - Pagination component
+- **popover.tsx** - Popover component
+- **radio-group.tsx** - Radio button group component
+- **resizable.tsx** - Resizable panel component
+- **scroll-area.tsx** - Custom scrollbar component
+- **separator.tsx** - Visual separator component
+- **sheet.tsx** - Side sheet component
+- **sidebar.tsx** - Sidebar navigation component
+- **slider.tsx** - Range slider component
+- **sonner.tsx** - Toast notification system
+- **switch.tsx** - Toggle switch component
+- **table.tsx** - Data table component
+- **textarea.tsx** - Multi-line text input component
+- **toggle.tsx** - Toggle button component
+- **toggle-group.tsx** - Toggle button group component
+- **tooltip.tsx** - Tooltip component
+- **use-mobile.tsx** - Mobile detection hook
+- **use-toast.ts** - Toast hook for notifications
+
+### Provider Components (/components/providers)
+- **auth-provider.tsx** - Authentication context provider
+- **supabase-auth-provider.tsx** - Supabase authentication provider
+- **theme-provider.tsx** - Theme context provider for dark/light mode
+
+### Additional Components
+- **theme-provider.tsx** - Duplicate theme provider (can be removed)
+
+---
+
+## 📁 LIB DIRECTORY (Utility Libraries)
+
+### Core Utilities
+- **utils.ts** - General utility functions and helpers
+- **database.ts** - Database connection and configuration
+- **database.types.ts** - TypeScript type definitions for database
+- **supabase.ts** - Supabase client configuration
+- **supabase-auth.ts** - Supabase authentication utilities
+- **supabase-anime.ts** - Anime-specific Supabase operations
+
+### Authentication & Authorization
+- **auth.ts** - Authentication utilities and helpers
+- **auth-context.tsx** - Authentication context for React
+- **auth-helper.ts** - Authentication helper functions
+- **admin-auth.ts** - Admin authentication middleware
+- **admin-middleware.ts** - Admin route protection middleware
+
+### External API Integration
+- **anilist.ts** - AniList GraphQL API integration
+- **jikan-api.ts** - Jikan API integration (alternative anime API)
+
+### Data Management
+- **anime-list.ts** - Anime list management utilities
+- **user-service.ts** - User data management services
+- **cache.ts** - Data caching utilities
+- **analytics.ts** - Analytics and reporting utilities
+
+### Email & Notifications
+- **email-config.ts** - Email service configuration
+- **email-service.ts** - Email sending utilities
+- **notifications.ts** - Notification system utilities
+
+### Background Jobs & Processing
+- **background-jobs.ts** - Background task processing
+- **rate-limiter.ts** - API rate limiting utilities
+
+### Error Handling & Logging
+- **error-handler.ts** - Centralized error handling
+- **logger.ts** - Logging utilities
+
+### SEO & Performance
+- **seo.ts** - SEO utilities and meta tags
+- **prisma.ts** - Prisma ORM configuration (legacy)
+
+### SQL Scripts (Database Setup)
+- **admin-setup.sql** - Admin system database setup
+- **admin-setup-safe.sql** - Safe admin setup (drops existing policies)
+- **fix-admin-policies.sql** - Fix admin RLS policies
+- **fix-all-rls-policies.sql** - Fix all Row Level Security policies
+- **fix-database-schema.sql** - Database schema fixes
+- **fix-rls-policy.sql** - RLS policy fixes
+- **create-dev-user.sql** - Development user creation script
+
+---
+
+## 📁 HOOKS DIRECTORY
+
+### Custom React Hooks
+- **use-auth.ts** - Authentication state management hook
+- **use-mobile.tsx** - Mobile device detection hook
+- **use-theme.ts** - Theme management hook (dark/light mode)
+- **use-toast.ts** - Toast notification hook
+
+---
+
+## 📁 PRISMA DIRECTORY (Database ORM)
+
+### Database Files
+- **schema.prisma** - Prisma database schema definition
+- **dev.db** - SQLite development database file
+
+---
+
+## 📁 PUBLIC DIRECTORY (Static Assets)
+
+### Images & Icons
+- **favicon.ico** - Website favicon (ICO format)
+- **favicon.svg** - Website favicon (SVG format)
+- **placeholder-logo.png** - Placeholder logo image
+- **placeholder-logo.svg** - Placeholder logo (SVG format)
+- **placeholder-user.jpg** - Default user avatar image
+- **placeholder.jpg** - General placeholder image
+- **placeholder.svg** - General placeholder (SVG format)
+
+### PWA Files
+- **manifest.json** - Progressive Web App manifest file
+
+---
+
+## 📁 SCRIPTS DIRECTORY
+
+### Setup & Migration Scripts
+- **setup.js** - Project setup and initialization script
+- **migrate-to-supabase.js** - Database migration to Supabase script
+
+---
+
+## 📁 STYLES DIRECTORY
+
+### CSS Files
+- **globals.css** - Global CSS styles and custom utilities
+
+---
+
+## 📁 NODE_MODULES DIRECTORY
+
+### Dependencies
+- **node_modules/** - All installed npm packages and dependencies
+
+---
+
+## 🔧 KEY TECHNICAL ARCHITECTURE
+
+### Frontend Architecture
+- **Next.js 15 App Router** - Modern React framework with file-based routing
+- **TypeScript** - Type-safe JavaScript for better development experience
+- **Tailwind CSS** - Utility-first CSS framework for rapid styling
+- **shadcn/ui** - Modern component library with accessibility features
+
+### Backend Architecture
+- **Supabase** - Backend-as-a-Service with PostgreSQL database
+- **JWT Authentication** - Secure token-based authentication
+- **Row Level Security** - Database-level access control
+- **Real-time Subscriptions** - Live data synchronization
+
+### External Integrations
+- **AniList GraphQL API** - Comprehensive anime database
+- **Data Caching** - Supabase for storing and caching anime metadata
+- **Image Optimization** - Next.js Image component for performance
+
+### Development Tools
+- **Git & GitHub** - Version control and collaboration
+- **ESLint** - Code quality and consistency
+- **TypeScript** - Static type checking
+- **Vercel** - Deployment and hosting platform
+
+---
+
+## 📊 PROJECT STATISTICS
+
+### File Count by Type
+- **TypeScript Files**: 50+ (.ts, .tsx)
+- **API Routes**: 20+ route handlers
+- **UI Components**: 30+ reusable components
+- **Utility Libraries**: 15+ utility files
+- **SQL Scripts**: 7+ database setup scripts
+- **Configuration Files**: 10+ config files
+
+### Key Features Implemented
+- ✅ User Authentication & Authorization
+- ✅ Anime List Management (CRUD operations)
+- ✅ Rating System (1-10 stars)
+- ✅ Progress Tracking
+- ✅ Discovery Features (Trending, Search, Recommendations)
+- ✅ Admin Panel with Analytics
+- ✅ Mobile-Responsive Design
+- ✅ Real-time Data Synchronization
+- ✅ Security Implementation (JWT, RLS)
+- ✅ Performance Optimization
+
+---
+
+## 🚀 DEPLOYMENT STRUCTURE
+
+### Production Files
+- **Vercel Configuration** - Automatic deployment from GitHub
+- **Environment Variables** - Secure configuration management
+- **Database Migrations** - Automated schema updates
+- **Static Assets** - Optimized images and icons
+- **PWA Support** - Progressive Web App capabilities
+
+---
+
+This comprehensive structure demonstrates a well-organized, production-ready full-stack application with modern development practices, proper separation of concerns, and scalable architecture. Each file and directory serves a specific purpose in the overall application ecosystem.

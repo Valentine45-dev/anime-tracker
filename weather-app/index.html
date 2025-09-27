@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>SkyCast • Weather</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" href="data:,">
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">☁️</span>
+        <h1 class="brand-title">SkyCast</h1>
+      </div>
+      <div class="controls">
+        <div class="search">
+          <label for="search-input" class="sr-only">Search city</label>
+          <input id="search-input" class="search-input" type="search" placeholder="Search city or place" autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-controls="suggestions" aria-expanded="false"/>
+          <div id="suggestions" class="suggestions" role="listbox" aria-label="Search suggestions"></div>
+        </div>
+        <div class="unit-toggle" role="group" aria-label="Units">
+          <button id="unit-c" class="unit-btn" data-unit="metric" aria-pressed="true">°C</button>
+          <button id="unit-f" class="unit-btn" data-unit="imperial" aria-pressed="false">°F</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="current" class="card current" aria-live="polite">
+        <div class="current-main">
+          <div class="current-left">
+            <div class="current-location" id="location">—</div>
+            <div class="current-temp" id="current-temp">—</div>
+            <div class="current-desc" id="current-desc">—</div>
+          </div>
+          <div class="current-right">
+            <div class="current-icon" id="current-icon" aria-hidden="true">⛅</div>
+          </div>
+        </div>
+        <div class="current-meta">
+          <div><span>Feels</span> <strong id="current-feels">—</strong></div>
+          <div><span>Humidity</span> <strong id="current-humidity">—</strong></div>
+          <div><span>Wind</span> <strong id="current-wind">—</strong></div>
+          <div><span>Precip</span> <strong id="current-precip">—</strong></div>
+          <div class="last-updated" id="last-updated">—</div>
+        </div>
+      </section>
+
+      <section class="card hourly">
+        <h2>Next 24 hours</h2>
+        <div id="hourly-list" class="hourly-list" aria-live="polite"></div>
+      </section>
+
+      <section class="card daily">
+        <h2>7-day forecast</h2>
+        <div id="daily-grid" class="daily-grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <small>
+        Data by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open‑Meteo</a>.
+        Geocoding by <a href="https://open-meteo.com/en/docs/geocoding-api" target="_blank" rel="noopener">Open‑Meteo Geocoding API</a>.
+      </small>
+    </footer>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+  </html>

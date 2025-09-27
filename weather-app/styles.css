@@ -1,0 +1,152 @@
+:root {
+  --bg: #0b1020;
+  --card: #10182f;
+  --muted: #a8b0c3;
+  --text: #e6ebff;
+  --accent: #7aa2ff;
+  --accent-2: #68d391;
+  --border: #1a2444;
+  --shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --muted: #5b657a;
+    --text: #0a0f1f;
+    --accent: #3056d3;
+    --accent-2: #1a9c64;
+    --border: #e5e9f3;
+    --shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: radial-gradient(1200px 800px at 10% -10%, rgba(122,162,255,0.18), transparent 60%),
+              radial-gradient(900px 600px at 90% -20%, rgba(104,211,145,0.15), transparent 50%),
+              var(--bg);
+  color: var(--text);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,1px,1px);
+  white-space: nowrap; border: 0;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px clamp(16px, 3vw, 32px);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark { font-size: 24px; }
+.brand-title { font-size: 20px; margin: 0; letter-spacing: 0.5px; }
+
+.controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.search { position: relative; min-width: 260px; }
+.search-input {
+  width: min(58vw, 520px);
+  padding: 12px 12px 12px 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s ease;
+  box-shadow: var(--shadow);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23a8b0c3"><path d="M10 2a8 8 0 015.292 13.708l3 3a1 1 0 01-1.414 1.414l-3-3A8 8 0 1110 2zm0 2a6 6 0 100 12A6 6 0 0010 4z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: 12px center;
+  background-size: 18px 18px;
+}
+.search-input:focus { border-color: var(--accent); }
+
+.suggestions {
+  position: absolute;
+  inset: auto 0 0 0;
+  transform: translateY(calc(100% + 8px));
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: none;
+  z-index: 10;
+}
+.suggestions.show { display: block; }
+.suggestions .item {
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px;
+}
+.suggestions .item:hover, .suggestions .item[aria-selected="true"] { background: rgba(122,162,255,0.12); }
+.suggestions .sub { color: var(--muted); font-size: 12px; }
+
+.unit-toggle { display: inline-flex; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 4px; box-shadow: var(--shadow); }
+.unit-btn {
+  border: 0; background: transparent; color: var(--text); padding: 8px 12px; border-radius: 8px; cursor: pointer; min-width: 44px;
+}
+.unit-btn[aria-pressed="true"] { background: var(--accent); color: white; }
+
+.container { width: min(1100px, 92vw); margin: 0 auto 40px; display: grid; gap: 16px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: var(--shadow); }
+.card h2 { margin: 4px 4px 12px; font-size: 16px; color: var(--muted); font-weight: 600; }
+
+.current-main { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.current-left { display: grid; gap: 6px; }
+.current-location { font-weight: 600; color: var(--muted); letter-spacing: 0.4px; }
+.current-temp { font-size: clamp(36px, 6vw, 64px); font-weight: 800; letter-spacing: -0.5px; }
+.current-desc { color: var(--muted); }
+.current-icon { font-size: clamp(52px, 8vw, 72px); filter: drop-shadow(0 6px 14px rgba(0,0,0,0.25)); }
+
+.current-meta { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 12px; color: var(--muted); }
+.current-meta > div { background: color-mix(in hsl, var(--card), var(--accent) 6%); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+.current-meta strong { color: var(--text); }
+.last-updated { grid-column: span 2; text-align: right; align-self: center; }
+
+.hourly-list { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(84px, 1fr); gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+.hourly-list .hour {
+  display: grid; gap: 6px; justify-items: center; border: 1px solid var(--border); border-radius: 12px; padding: 10px; background: color-mix(in hsl, var(--card), var(--accent) 8%);
+}
+.hourly-list .time { font-size: 12px; color: var(--muted); }
+.hourly-list .icon { font-size: 20px; }
+.hourly-list .temp { font-weight: 700; }
+
+.daily-grid { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 8px; }
+.daily-grid .day { display: grid; gap: 6px; justify-items: center; border: 1px solid var(--border); border-radius: 12px; padding: 10px; }
+.daily-grid .name { font-size: 12px; color: var(--muted); }
+.daily-grid .icon { font-size: 24px; }
+.daily-grid .temps { font-weight: 700; }
+.daily-grid .precip { font-size: 12px; color: var(--muted); }
+
+.app-footer { width: min(1100px, 92vw); margin: 20px auto 40px; color: var(--muted); }
+.app-footer a { color: var(--accent); text-decoration: none; }
+.app-footer a:hover { text-decoration: underline; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+  background: var(--card); color: var(--text); border: 1px solid var(--border);
+  border-radius: 999px; padding: 10px 14px; box-shadow: var(--shadow); display: none;
+}
+.toast.show { display: inline-block; }
+
+@media (max-width: 800px) {
+  .current-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .daily-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+
+@media (max-width: 480px) {
+  .daily-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}

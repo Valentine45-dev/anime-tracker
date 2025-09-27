@@ -1,0 +1,21 @@
+{
+  "name": "weather-app",
+  "version": "1.0.0",
+  "description": "A fully functional weather application",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "keywords": [
+    "weather",
+    "javascript",
+    "html",
+    "css",
+    "api"
+  ],
+  "author": "Assistant",
+  "license": "MIT"
+}
